@@ -1,0 +1,3 @@
+scripts/
+^.*\.Rproj$
+^\.Rproj\.user$
