@@ -3,22 +3,24 @@
 
 
 
-huishouden_write_output <- function(brp){
-  
-  # Leeftijd afgerond naar beneden, zoals het hoort
-  brp$leeftijd <- floor(brp$leeftijd)
-
-  data.table::fwrite(brp, file.path(.cc$paths$outputdir, "brp_huishoudens.csv"), 
-                     sep = ";",
-                     row.names = FALSE, col.names = TRUE)
-  pm_log("Output written ({.cc$paths$outputdir})")
-}
+# huishouden_write_output <- function(brp){
+#   
+#   # Leeftijd afgerond naar beneden, zoals het hoort
+#   brp$leeftijd <- floor(brp$leeftijd)
+# 
+#   data.table::fwrite(brp, file.path(.cc$paths$outputdir, "brp_huishoudens.csv"), 
+#                      sep = ";",
+#                      row.names = FALSE, col.names = TRUE)
+#   pm_log("Output written ({.cc$paths$outputdir})")
+# }
 
 
 #------BRP Tijdmachine -----
 
-
-brp_tijdmachine <- function(historie, brpcur, peil_datum){
+#' Bepaal inwonerbestand op een willekeurige datum
+#' @param historie Dataframe ingelezen met 
+#' @export
+brp_tijdmachine <- function(historie, brpstam, peil_datum){
   
   stopifnot(is.Date(peil_datum))
   
@@ -33,7 +35,7 @@ brp_tijdmachine <- function(historie, brpcur, peil_datum){
     select(anr, datum_inschrijving_eerst) %>%
     distinct
   
-  data <- left_join(brpcur, tbl_datum_inschrijving, by = "anr")
+  data <- left_join(brpstam, tbl_datum_inschrijving, by = "anr")
   
   data <- data %>%
     mutate(datum_brp_tijdmachine = peil_datum,
@@ -57,7 +59,7 @@ brp_tijdmachine <- function(historie, brpcur, peil_datum){
   
   
     adres_historie <- bind_rows(
-      select(brpcur, anr, adres, datum_adres, datum_inschrijving, gemeente_inschrijving),
+      select(brpstam, anr, adres, datum_adres, datum_inschrijving, gemeente_inschrijving),
       select(historie, anr, adres, datum_adres, datum_inschrijving, 
              gemeente_inschrijving
              )
@@ -81,18 +83,25 @@ brp_tijdmachine <- function(historie, brpcur, peil_datum){
   data 
 }
 
+# Tel aantal kinderen per persoon op een bepaalde peildatum
+current_kinderen <- function(data, peil_datum){
+  
+  data %>%
+    filter(KNDGEBOORTEDATUM < peil_datum) %>%
+    count(PRSANUMMER, name = "aantal_kinderen") %>%
+    rename(anr = PRSANUMMER)
+  
+}
+
 
 #' Hoofd functie om 'huishouden' kolom toe te voegen.
 #' @export
-bepaal_huishoudens <- function(brpcur, historie, huwelijk, kind, adressen_inst,
-                               peil_datum,
+bepaal_huishoudens <- function(peil_datum, 
+                               brpstam, historie, huwelijk, kind, adressen_inst,
                                verhuis_wezen = TRUE, ...){
   
   # Filter op peildatum
-  brp <- brp_tijdmachine(historie, brpcur, peil_datum)
-  
-  # Is dit adres een institutioneel adres?
-  brp <- add_institutioneel_adres(brp, adressen_inst)
+  brp <- brp_tijdmachine(historie, brpstam, peil_datum)
   
   # Start punt 'adres voor bepaling huishouden': adres_huishouden.
   # Dit kan later afwijken omdat 'wezen' verhuisd worden
@@ -177,6 +186,10 @@ bepaal_huishoudens <- function(brpcur, historie, huwelijk, kind, adressen_inst,
                 -datum_inschrijving_eerst
   )
   
+  # Laatste bewerkingen
+  brp <- mutate(brp,
+                leeftijd = floor(leeftijd))
+  
   return(brp)  
 }
 
@@ -212,8 +225,6 @@ verhuis_wezen <- function(data){
     }
     
   }
-  
-  #pm_log("Uithuizige minderjarigen verhuizen naar ouders binnen de gemeente (n = {length(ii)})")
   
   mutate(data,
          verhuisde_minderjarige = adres != adres_huishouden)
@@ -474,10 +485,6 @@ huishouden_functie <- function(adres_huishouden,
             huishouden[i] <- anr[i_oldest_in_couple]
           }
         }
-        
-        
-        
-
         
       }
       
@@ -746,28 +753,6 @@ huishouden_categorie <- function(n_personen, ouder, kind, broerzus, leeftijd,
 
 
 
-leeftijd_delta <- function(x){
-  
-  if(length(x) == 1){
-    0
-  } else {
-    abs(x[2] - x[1])
-  }
-  
-}
-
-datum_delta <- function(x){
-  
-  x <- x[!is.na(x)]
-  
-  if(length(x) < 2){
-    999
-  } else {
-    as.numeric(difftime(x[1],x[2], "days"))
-  }
-  
-  
-}
 
 
 heeft_broerzus <- function(anrouder1, anrouder2){
@@ -782,96 +767,6 @@ heeft_broerzus <- function(anrouder1, anrouder2){
 }
 
 
-
-
-
-#------ Utils ------
-
-pm_read_config <- function(fn){
-  
-  out <- try(yaml::read_yaml(fn))
-  
-  if(inherits(out, "try-error")){
-    pm_log("Error reading config ({fn})", "fatal")
-    return(FALSE)
-  } 
-  
-  for(i in seq_along(out$config)){
-    out$config[[i]]$name <- names(out$config)[i]
-  }
-  
-  return(out)  
-}
-
-
-demoperc <- function(column, data){
-  
-  tab <- table(data[[column]])
-  round(100 * tab[2] / sum(tab[1:2]),1)
-  
-}
-
-
-pm_open_logfile <- function(path, what){
-  
-  today_ <- format(Sys.Date(), "%Y%m%d")
-  fn <- file.path(path, paste0(today_, "_", what, ".log"))
-  
-  flog.appender(appender.tee(fn), name = what)
-  pm_log("------------- start {what} v. {.version} -------------")
-}
-
-
-pm_log <- function(msg, how = c("info","fatal","warn")){
-  how <- match.arg(how)
-  
-  msg <- glue(msg, .envir = parent.frame(n = 1))
-  switch(how, 
-         fatal = flog.fatal(msg, name = .jobname),
-         info = flog.info(msg, name = .jobname),
-         warn = flog.warn(msg, name = .jobname))
-}
-
-
-pm_open_semafoor <- function(){
-  fn <- file.path(.cc$paths$outputdir, "locked.sem")
-  writeLines("hello from shintolabs", fn)
-}
-
-pm_close_semafoor <- function(){
-  fn <- file.path(.cc$paths$outputdir, "locked.sem")
-  unlink(fn)  
-}
-
-remove_identical <- function(data){
-  n_h <- nrow(data)
-  data <- distinct(data)
-  # print(glue("removed {n_h - nrow(data)} identical rows"))
-  
-  data
-}
-
-
-filter_last_leading <- function(column_in, column_out, val){
-  
-  if(column_in[1] != val){
-    return(NA)
-  }
-  
-  rl <- data.table::rleid(column_in)
-  vals <- column_out[rl == 1]
-  
-  vals[length(vals)]
-  
-}
-
-
-
-
-emp <- function(x){
-  x[is.na(x)] <- ""
-  x
-}
 
 
 
