@@ -1,3 +1,6 @@
 scripts/
 ^.*\.Rproj$
 ^\.Rproj\.user$
+
+scripts/
+test/

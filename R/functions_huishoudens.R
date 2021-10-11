@@ -87,9 +87,9 @@ brp_tijdmachine <- function(historie, brpstam, peil_datum){
 current_kinderen <- function(data, peil_datum){
   
   data %>%
-    filter(KNDGEBOORTEDATUM < peil_datum) %>%
-    count(PRSANUMMER, name = "aantal_kinderen") %>%
-    rename(anr = PRSANUMMER)
+    filter(kndgeboortedatum < peil_datum) %>%
+    count(prsanummer, name = "aantal_kinderen") %>%
+    rename(anr = prsanummer)
   
 }
 
@@ -161,7 +161,7 @@ bepaal_huishoudens <- function(peil_datum,
       ...)) %>%
     ungroup
   
-  
+
   # Laatste 'overblijvers' vormen eigen huishouden.
   brp$huishouden_overgebleven_persoon <- brp$huishouden == ""
   brp$huishouden[brp$huishouden == ""] <- brp$anr[brp$huishouden == ""]
@@ -240,11 +240,11 @@ persoon_classificatie <- function(data){
   group_by(data, adres_huishouden) %>%
     mutate(
       n_personen_adres = n(),
-      ouder = anr %in% anrouder1 | anr %in% anrouder2,
-      kind = anrouder1 %in% anr | anrouder2 %in% anr,
-      broerzus = heeft_broerzus(anrouder1, anrouder2),
-      getrouwd = !is.na(anr_partner),
-      getrouwd_zelfde_adres = anr_partner %in% anr  
+      ouder = anr %in% anrouder1 | anr %in% anrouder2, # heeft deze persoon kinderen op dit adres?
+      kind = anrouder1 %in% anr | anrouder2 %in% anr,  # heeft deze persoon ouder(s) op dit adres?
+      broerzus = heeft_broerzus(anrouder1, anrouder2), # deelt deze persoon ouders met een andere persoon op dit adres?
+      getrouwd = !is.na(anr_partner),                  # a-nummer partner ingevuld?
+      getrouwd_zelfde_adres = anr_partner %in% anr     # partner op hetzelfde adres?
     ) %>%
     ungroup
   
@@ -556,7 +556,7 @@ huishouden_functie <- function(adres_huishouden,
   
   # Enkele volwassene koppelen aan enkele oudere, als leeftijd of verhuisdatum ca. gelijk.
   if(sum(ouder) == 1){
-    
+
     if(any(huishouden == "")){
     
       mis_age <- leeftijd[huishouden == ""]
@@ -604,6 +604,7 @@ huishouden_functie <- function(adres_huishouden,
 
   return(huishouden)
 }
+
 
 
 

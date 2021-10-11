@@ -14,15 +14,21 @@ read_csv_source <- function(path, filename){
 #' Lees institutionele adressen data
 #' @export
 read_institutionele_adressen <- function(con = NULL, inst_path = NULL){
-  
+  tictoc::tic("inst_adr")
   if(!is.null(inst_path)){
-    read.csv2(file.path(inst_path, "adressen_lijst.csv"),
+    out <- read.csv2(file.path(inst_path, "adressen_lijst.csv"),
               na.strings = "") %>%
-      mutate(adres = paste0(Postcode, "_", Huisnummer, "_",Huisnummerletter))  
+      janitor::clean_names() %>%
+      mutate(adres = paste0(postcode, "_", huisnummer, "_",huisnummerletter))  
   } else {
-    tbl(con, in_schema("datadienst",""))
+    out <- tbl(con, in_schema("datadienst","brp_institutionele_adressen")) %>%
+      collect %>%
+      mutate(adres = paste0(postcode, "_", huisnummer, "_",huisnummerletter))
+    
+    out[out == ""] <- NA
   }
-  
+  tictoc::toc()
+  out
 }
 
 #' Read huwelijk data
@@ -69,6 +75,8 @@ read_huwelijk <- function(con = NULL, brp_path = NULL){
              datum_huwelijk = lubridate::ymd(datum_huwelijk),
              datum_huwelijk = replace_na(datum_huwelijk, lubridate::ymd("1001-1-1")))
     
+    out[out == ""] <- NA
+    
   }
   
   tictoc::toc()
@@ -90,6 +98,8 @@ read_kind <- function(con = NULL, brp_path = NULL){
     out <- tbl(con, in_schema("datadienst", "brp_bzskin")) %>% 
       collect %>%
       mutate(kndgeboortedatum = lubridate::ymd(kndgeboortedatum))
+    
+    out[out == ""] <- NA
   }
   
   tictoc::toc()
@@ -161,6 +171,8 @@ read_bzsc58 <- function(con = NULL, brp_path = NULL){
                                       huisnummertoevoeging)) %>%
       dplyr::relocate(adres)
     
+    out[out == ""] <- NA
+    
   }
   
   tictoc::toc()
@@ -169,7 +181,8 @@ read_bzsc58 <- function(con = NULL, brp_path = NULL){
   
 }
 
-
+#' Lees ruwe BZSPRS data
+#' @export
 read_bzsprs <- function(con = NULL, brp_path = NULL){
   
   tictoc::tic("bzsprs")
@@ -316,6 +329,8 @@ read_bzsprs <- function(con = NULL, brp_path = NULL){
                                       huisletter, "_", 
                                       huisnummertoevoeging)) %>%
       dplyr::relocate(adres)
+    
+    out[out == ""] <- NA
   }
   
   tictoc::toc()
@@ -469,10 +484,10 @@ add_institutioneel_adres <- function(data, adressen_inst){
   # op postcode+huisnummer als geen huisletter, en op 
   # postcode+huisnummer+huisletter als wel huisletter.
   # (omslachtige maar veilige join)
-  inst1 <- filter(adressen_inst, !is.na(Huisnummerletter)) %>%
-    mutate(adres = paste0(Postcode, "_", Huisnummer, "_", Huisnummerletter))
-  inst2 <- filter(adressen_inst, is.na(Huisnummerletter)) %>%
-    mutate(adres = paste0(Postcode, "_", Huisnummer))
+  inst1 <- filter(adressen_inst, !is.na(huisnummerletter)) %>%
+    mutate(adres = paste0(postcode, "_", huisnummer, "_", huisnummerletter))
+  inst2 <- filter(adressen_inst, is.na(huisnummerletter)) %>%
+    mutate(adres = paste0(postcode, "_", huisnummer))
   
   data <- mutate(data, 
                  adres1 = paste0(postcode, "_", 
