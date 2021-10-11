@@ -19,13 +19,17 @@ pm_read_config <- function(fn){
 }
 
 
-demoperc <- function(column, data){
-  
-  tab <- table(data[[column]])
-  round(100 * tab[2] / sum(tab[1:2]),1)
-  
-}
 
+huishouden_write_output <- function(brp){
+
+  # Leeftijd afgerond naar beneden, zoals het hoort
+  brp$leeftijd <- floor(brp$leeftijd)
+
+  data.table::fwrite(brp, file.path(.cc$paths$outputdir, "brp_huishoudens.csv"),
+                     sep = ";",
+                     row.names = FALSE, col.names = TRUE)
+  pm_log("Output written ({.cc$paths$outputdir})")
+}
 
 pm_open_logfile <- function(path, what){
   

@@ -2,17 +2,26 @@
 
 
 
+#' Huishouden data samenvatting
+#' @details Werkt met output van bepaal_huishoudens
+#' @export
+brp_summary <- function(data){
+  tibble::tribble(
+    ~stat, ~value,
+    "n_inwoners", length(unique(data$anr)),
+    "n_adressen", length(unique(data$adres)),
+    "n_huishoudens", length(unique(data$huishouden)),
+    "n_verhuisde_wezen", sum(data$adres != data$adres_huishouden),
+    "ave_n_huwelijken_persoon", mean(data$aantal_huwelijken),
+    "ave_n_kinderen_persoon", mean(data$aantal_kinderen),
+    "p_getrouwd", table_frac("getrouwd", data),
+    "p_getrouwd_zelfde_adres", table_frac("getrouwd_zelfde_adres", data),
+    "ave_hh_n_personen", nrow(data)/length(unique(data$huishouden)),
+    "ave_persoon_ouders_adres", table_frac("kind", data),
+    "ave_persoon_kinderen_adres", table_frac("ouder", data)
+  )
+}
 
-# huishouden_write_output <- function(brp){
-#   
-#   # Leeftijd afgerond naar beneden, zoals het hoort
-#   brp$leeftijd <- floor(brp$leeftijd)
-# 
-#   data.table::fwrite(brp, file.path(.cc$paths$outputdir, "brp_huishoudens.csv"), 
-#                      sep = ";",
-#                      row.names = FALSE, col.names = TRUE)
-#   pm_log("Output written ({.cc$paths$outputdir})")
-# }
 
 
 #------BRP Tijdmachine -----
@@ -98,7 +107,10 @@ current_kinderen <- function(data, peil_datum){
 #' @export
 bepaal_huishoudens <- function(peil_datum, 
                                brpstam, historie, huwelijk, kind, adressen_inst,
-                               verhuis_wezen = TRUE, ...){
+                               verhuis_wezen = TRUE, 
+                               ethniciteit = TRUE,
+                               buurt_wijk_codes = TRUE,
+                               ...){
   
   # Filter op peildatum
   brp <- brp_tijdmachine(historie, brpstam, peil_datum)
@@ -189,6 +201,22 @@ bepaal_huishoudens <- function(peil_datum,
   # Laatste bewerkingen
   brp <- mutate(brp,
                 leeftijd = floor(leeftijd))
+  
+  
+  # Extra kolommen
+  if(ethniciteit){
+    # dit hoeft niet van te voren, kan ook achteraf voor een dataset met kolommen:
+    # geboorte_land_oud1_code, geboorte_land_oud2_code, geslacht_ouder1, geslacht_ouder2
+    # geboorte_land_code
+    brp <- add_ethniciteit_columns(brp)
+
+  }
+  
+  if(buurt_wijk_codes){
+    
+    brp <- add_buurt_wijk_columns(brp)
+    
+  }
   
   return(brp)  
 }

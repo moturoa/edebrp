@@ -3,6 +3,7 @@
 export(add_buurt_wijk_columns)
 export(add_ethniciteit_columns)
 export(bepaal_huishoudens)
+export(brp_summary)
 export(brp_tijdmachine)
 export(read_brpstam)
 export(read_bzsc58)

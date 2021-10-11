@@ -44,3 +44,17 @@ datum_delta <- function(x){
   
 }
 
+# alleen voor TRUE/FALSE
+table_perc <- function(column, data){
+  
+  tab <- table(data[[column]])
+  unname(round(100 * tab[2] / sum(tab[1:2]),1))
+  
+}
+
+# alleen voor TRUE/FALSE
+table_frac <- function(column, data){
+  
+  tab <- table(data[[column]])
+  unname(tab[2] / sum(tab[1:2]))
+}

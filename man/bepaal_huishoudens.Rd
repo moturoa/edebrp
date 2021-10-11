@@ -12,6 +12,8 @@ bepaal_huishoudens(
   kind,
   adressen_inst,
   verhuis_wezen = TRUE,
+  ethniciteit = TRUE,
+  buurt_wijk_codes = TRUE,
   ...
 )
 }
