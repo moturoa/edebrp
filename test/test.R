@@ -49,6 +49,9 @@ brpstam <- read_brpstam(bzsprs,
                         adressen_inst,
                         .peil_datum)
 
+# optioneel.
+brpstam2 <- add_ethniciteit_columns(brpstam)
+
 # Verblijfshistorie (626k rijen)
 historie <- read_historie(bzsc, brpstam)
 

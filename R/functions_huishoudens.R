@@ -6,19 +6,19 @@
 #' @details Werkt met output van bepaal_huishoudens
 #' @export
 brp_summary <- function(data){
-  tibble::tribble(
-    ~stat, ~value,
-    "n_inwoners", length(unique(data$anr)),
-    "n_adressen", length(unique(data$adres)),
-    "n_huishoudens", length(unique(data$huishouden)),
-    "n_verhuisde_wezen", sum(data$adres != data$adres_huishouden),
-    "ave_n_huwelijken_persoon", mean(data$aantal_huwelijken),
-    "ave_n_kinderen_persoon", mean(data$aantal_kinderen),
-    "p_getrouwd", table_frac("getrouwd", data),
-    "p_getrouwd_zelfde_adres", table_frac("getrouwd_zelfde_adres", data),
-    "ave_hh_n_personen", nrow(data)/length(unique(data$huishouden)),
-    "ave_persoon_ouders_adres", table_frac("kind", data),
-    "ave_persoon_kinderen_adres", table_frac("ouder", data)
+  tibble::tibble(
+    peil_datum = unique(data$peil_datum)[1],
+    n_inwoners = length(unique(data$anr)),
+    n_adressen = length(unique(data$adres)),
+    n_huishoudens = length(unique(data$huishouden)),
+    n_verhuisde_wezen = sum(data$adres != data$adres_huishouden),
+    ave_n_huwelijken_persoon = mean(data$aantal_huwelijken),
+    ave_n_kinderen_persoon = mean(data$aantal_kinderen),
+    p_getrouwd = table_frac("getrouwd", data),
+    p_getrouwd_zelfde_adres = table_frac("getrouwd_zelfde_adres", data),
+    ave_hh_n_personen = nrow(data)/length(unique(data$huishouden)),
+    ave_persoon_ouders_adres = table_frac("kind", data),
+    ave_persoon_kinderen_adres = table_frac("ouder", data)
   )
 }
 
@@ -212,11 +212,14 @@ bepaal_huishoudens <- function(peil_datum,
 
   }
   
+  # Extra buurt/wijk codes, namen (deels Ede specifiek)
   if(buurt_wijk_codes){
-    
     brp <- add_buurt_wijk_columns(brp)
-    
   }
+  
+  # peil_datum
+  brp$peil_datum <- peil_datum
+  brp <- relocate(brp, peil_datum, .after = id)
   
   return(brp)  
 }
