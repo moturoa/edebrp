@@ -347,7 +347,7 @@ read_brpstam <- function(brp_bzsprs, adressen_inst, peil_datum){
   data(buurt_key)
   data(geboorte_land_code_key)
   
-  # 4. Leeftijden, datums.
+  # 1. Leeftijden, datums.
   data <- brp_bzsprs %>%
     mutate(
       leeftijd = as.numeric(difftime(peil_datum, datum_geboorte, units = "weeks")) / 52,
@@ -368,15 +368,25 @@ read_brpstam <- function(brp_bzsprs, adressen_inst, peil_datum){
                  datum_adres = coalesce(datum_adres, datum_inschrijving)
   )
   
-  # 5. Institutioneel adres TRUE/FALSE
+  # 2. Institutioneel adres TRUE/FALSE
   data <- add_institutioneel_adres(data, adressen_inst)
   
 
-  # 6b.
+  # 
   data <- as_tibble(data)
   
+  # 3. Status houder categorieen
+  data <- mutate(data,
+                 statushouder = ifelse(aanduidingverblijfstitelcode %in% c(21,26), 
+                                       1,2),
+                 statushouderplus = ifelse(aanduidingverblijfstitelcode %in% c(21,25,26,27), 
+                                           1,2)
+                 ) %>%
+    relocate(statushouder, .after = datumeindeverblijfstitel) %>%
+    relocate(statushouderplus, .after = statushouder)
   
-  # 7. Burgerlijke staat labels
+  
+  # 4. Burgerlijke staat labels
   burgstaat_key <- tibble::tribble(
     ~burgerlijke_staat, ~burgerlijke_staat_omschrijving,
     "A", "Achtergebleven gereg. partner",
@@ -389,10 +399,10 @@ read_brpstam <- function(brp_bzsprs, adressen_inst, peil_datum){
   
   # join, en zet kolom naast de code.
   data <- left_join(data, burgstaat_key, by = "burgerlijke_staat") %>% 
-    select(adres:burgerlijke_staat, burgerlijke_staat_omschrijving, everything())
+    relocate(burgerlijke_staat_omschrijving, .after = burgerlijke_staat)
   
   
-  # 8. Gezinsverhouding label.
+  # 5. Gezinsverhouding label.
   gezinsverh_key <- tibble::tribble(
     ~gezinsverhouding, ~gezinsverhouding_omschrijving,
     "1", "Man of vrouw met inwonende echtgenoot",
@@ -403,10 +413,10 @@ read_brpstam <- function(brp_bzsprs, adressen_inst, peil_datum){
     "6", "Niet in gezinsverband levend/alleenstaand")
   
   data <- left_join(data, gezinsverh_key, by = "gezinsverhouding") %>% 
-    select(adres:gezinsverhouding, gezinsverhouding_omschrijving, everything())
+    relocate(gezinsverhouding_omschrijving, .after = gezinsverhouding)
   
   
-  # 9. 
+  # 6. 
   if("gezag_minderjarige_indicatie" %in% names(data)){
     
     gezag_key <- tibble::tribble(
@@ -422,7 +432,7 @@ read_brpstam <- function(brp_bzsprs, adressen_inst, peil_datum){
       relocate(gezag_minderjarige_omschrijving, .after = gezag_minderjarige_indicatie)
   }
   
-  # 10. Voeg id kolom toe om volgorde te behouden
+  # 7. Voeg id kolom toe om volgorde te behouden
   data <- data %>% 
     mutate(id = 1:nrow(.)) %>%
     dplyr::relocate(id)

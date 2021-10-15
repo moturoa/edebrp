@@ -200,8 +200,20 @@ bepaal_huishoudens <- function(peil_datum,
   
   # Laatste bewerkingen
   brp <- mutate(brp,
-                leeftijd = floor(leeftijd))
-  
+                leeftijd = floor(leeftijd),
+                minder18 = ifelse(minder18, "<18 Jaar", ">18 Jaar"),
+                minder23 = ifelse(minder23, "<23 Jaar", ">23 Jaar"),
+                institutioneel_adres = ifelse(institutioneel_adres, "Inst. adres", "Geen inst. adres"),
+                verhuisde_minderjarige = ifelse(verhuisde_minderjarige, "Verhuisde minderjarige", "Geen verhuisde minderjarige"),
+                ouder = ifelse(ouder, "Heeft kinderen op adres", "Heeft geen kinderen op adres"),
+                kind = ifelse(kind, "Heeft ouders op adres", "Heeft geen ouders op adres"),
+                broerzus = ifelse(broerzus, "Heeft broer/zus op adres", "Heeft geen broer/zus op adres"),
+                getrouwd = ifelse(getrouwd, "Getrouwd", "Niet getrouwd"),
+                getrouwd_zelfde_adres = ifelse(getrouwd_zelfde_adres, "Getrouwd, partner zelfde adres","Niet getrouwd of ander adres")
+  ) %>% 
+    select(-verhuisd,-geboren,-overleden,-ingeschreven, -huishouden_overgebleven_persoon) %>%
+    rename(peil_datum = datum_brp_tijdmachine) %>%
+    relocate(peil_datum, .after = "id")
   
   # Extra kolommen
   if(ethniciteit){
@@ -217,9 +229,10 @@ bepaal_huishoudens <- function(peil_datum,
     brp <- add_buurt_wijk_columns(brp)
   }
   
-  # peil_datum
-  brp$peil_datum <- peil_datum
-  brp <- relocate(brp, peil_datum, .after = id)
+  
+  
+  
+  
   
   return(brp)  
 }
