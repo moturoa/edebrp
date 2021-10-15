@@ -94,7 +94,7 @@ read_kind <- function(con = NULL, brp_path = NULL){
   if(!is.null(brp_path)){
     out <- read_csv_source(brp_path, "BZSKINQ00") %>%
       janitor::clean_names() %>%
-      mutate(KNDGEBOORTEDATUM = lubridate::ymd(KNDGEBOORTEDATUM))  
+      mutate(kndgeboortedatum = lubridate::ymd(kndgeboortedatum))  
   } else {
     out <- tbl(con, in_schema("datadienst", "brp_bzskin")) %>% 
       collect %>%
