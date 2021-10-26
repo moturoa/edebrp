@@ -21,7 +21,7 @@ read_institutionele_adressen <- function(con = NULL, inst_path = NULL){
       janitor::clean_names() %>%
       mutate(adres = paste0(postcode, "_", huisnummer, "_",huisnummerletter))  
   } else {
-    out <- tbl(con, in_schema("datadienst","brp_institutionele_adressen")) %>%
+    out <- tbl(con, in_schema("pseudo","brp_institutionele_adressen")) %>%
       collect %>%
       mutate(adres = paste0(postcode, "_", huisnummer, "_",huisnummerletter))
     
@@ -57,7 +57,7 @@ read_huwelijk <- function(con = NULL, brp_path = NULL){
              datum_huwelijk = replace_na(datum_huwelijk, lubridate::ymd("1001-1-1")))
   } else {
     
-    out <- tbl(con, in_schema("datadienst", "brp_bzshuw")) %>% 
+    out <- tbl(con, in_schema("pseudo", "brp_bzshuw")) %>% 
       select(bsn = prsburgerservicenummer,
              anr = prsanummer,
              bsn_partner = huwburgerservicenummer,
@@ -96,7 +96,7 @@ read_kind <- function(con = NULL, brp_path = NULL){
       janitor::clean_names() %>%
       mutate(kndgeboortedatum = lubridate::ymd(kndgeboortedatum))  
   } else {
-    out <- tbl(con, in_schema("datadienst", "brp_bzskin")) %>% 
+    out <- tbl(con, in_schema("pseudo", "brp_bzskin")) %>% 
       collect %>%
       mutate(kndgeboortedatum = lubridate::ymd(kndgeboortedatum))
     
@@ -145,7 +145,7 @@ read_bzsc58 <- function(con = NULL, brp_path = NULL){
     
   } else {
   
-    out <- tbl(con, in_schema("datadienst", "brp_bzsc58")) %>% 
+    out <- tbl(con, in_schema("pseudo", "brp_bzsc58")) %>% 
       select(bsn = prsburgerservicenummer,
              anr = prsanummer,
              gemeente_inschrijving = vblhstgemeentevaninschrijvingomschrijving,
@@ -267,7 +267,7 @@ read_bzsprs <- function(con = NULL, brp_path = NULL){
     
   } else {
     
-    out <- tbl(con, in_schema("datadienst", "brp_bzsprs")) %>% 
+    out <- tbl(con, in_schema("pseudo", "brp_bzsprs")) %>% 
       select(bsn = prsburgerservicenummer,
              anr = prsanummer,
              anrouder1 = ou1anummer,  
