@@ -68,9 +68,13 @@ brp_tijdmachine <- function(historie, brpstam, peil_datum){
   
   
     adres_historie <- bind_rows(
-      select(brpstam, anr, adres, datum_adres, datum_inschrijving, gemeente_inschrijving),
-      select(historie, anr, adres, datum_adres, datum_inschrijving, 
-             gemeente_inschrijving
+      select(brpstam, anr, adres, datum_adres, datum_inschrijving, gemeente_inschrijving,
+             gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
+             wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving
+      ),
+      select(historie, anr, adres, datum_adres, datum_inschrijving, gemeente_inschrijving, 
+             gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
+             wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving
              )
     ) %>% 
       filter(gemeente_inschrijving == "Ede",
@@ -78,11 +82,16 @@ brp_tijdmachine <- function(historie, brpstam, peil_datum){
              datum_adres < peil_datum) %>%
       group_by(anr) %>%
       filter(datum_adres == max(datum_adres)) %>%
-      select(anr, adres, datum_adres, datum_inschrijving) %>%
+      select(anr, adres, datum_adres, datum_inschrijving,
+             gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
+             wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving) %>%
       distinct(anr, .keep_all = TRUE) %>%
     ungroup()
       
-    data <- left_join(select(data, -datum_inschrijving, -datum_adres) %>% 
+    data <- left_join(select(data, -datum_inschrijving, -datum_adres,
+                             -gemeente_deel,-woonplaats,-postcode,-huisnummer,-huisletter,
+                             -huisnummertoevoeging,-wijk_code,-wijk_naam,-buurt_code_cipers,
+                             -buurt_naam,-soort_pand_code,-soort_pand_omschrijving) %>% 
                         rename(adres_cur = adres), 
                       adres_historie, by = "anr") %>%
             mutate(adres = coalesce(adres, adres_cur)) %>%

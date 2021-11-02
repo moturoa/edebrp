@@ -129,6 +129,20 @@ read_bzsc58 <- function(con = NULL, brp_path = NULL){
       select(adres, 
              bsn = PRSBURGERSERVICENUMMER,
              anr = PRSANUMMER,
+             
+             gemeente_deel = VBLHSTGEMEENTEDEEL,
+             woonplaats = VBLHSTWOONPLAATSNAAM,
+             postcode = VBLHSTPOSTCODE,
+             huisnummer = VBLHSTHUISNUMMER,
+             huisletter = VBLHSTHUISLETTER,
+             huisnummertoevoeging = VBLHSTHUISNUMMERTOEVOEGING,
+             wijk_code = VBLHSTWIJKCODE,
+             wijk_naam = VBLHSTWIJKOMSCHRIJVING,
+             buurt_code_cipers = VBLHSTPLANALOGISCHEWIJKCODE,
+             buurt_naam = VBLHSTPLANALOGISCHEWIJKOMSCHRIJVING,
+             soort_pand_code = VBLHSTSOORTPANDCODE,
+             soort_pand_omschrijving = VBLHSTSOORTPANDOMSCHRIJVING,
+             
              gemeente_inschrijving = VBLHSTGEMEENTEVANINSCHRIJVINGOMSCHRIJVING,
              adres_functie = VBLHSTFUNCTIEADRES,
              datum_inschrijving = VBLHSTDATUMINSCHRIJVING,
@@ -148,6 +162,20 @@ read_bzsc58 <- function(con = NULL, brp_path = NULL){
     out <- tbl(con, in_schema("pseudo", "brp_bzsc58")) %>% 
       select(bsn = prsburgerservicenummer,
              anr = prsanummer,
+             
+             gemeente_deel = vblhstgemeentedeel,
+             woonplaats = vblhstwoonplaatsnaam,
+             postcode = vblhstpostcode,
+             huisnummer = vblhsthuisnummer,
+             huisletter = vblhsthuisletter,
+             huisnummertoevoeging = vblhsthuisnummertoevoeging,
+             wijk_code = vblhstwijkcode,
+             wijk_naam = vblhstwijkomschrijving,
+             buurt_code_cipers = vblhstplanalogischewijkcode,
+             buurt_naam = vblhstplanalogischewijkomschrijving,
+             soort_pand_code = vblhstsoortpandcode,
+             soort_pand_omschrijving = vblhstsoortpandomschrijving,
+             
              gemeente_inschrijving = vblhstgemeentevaninschrijvingomschrijving,
              adres_functie = vblhstfunctieadres,
              datum_inschrijving = vblhstdatuminschrijving,
@@ -158,11 +186,7 @@ read_bzsc58 <- function(con = NULL, brp_path = NULL){
              datum_adres_buitenland = vblhstdatumaanvangadresbuitenland,
              datum_nederland = vblhstdatumvestiginginnederland,
              datum_nederland_ind = vblhstdatumvestiginginnederlandindicator,
-             land_ingeschreven = vblhstlandvanwaaringeschrevenomschrijving,
-             postcode = vblhstpostcode,
-             huisnummer = vblhsthuisnummer,
-             huisletter = vblhsthuisletter,
-             huisnummertoevoeging = vblhsthuisnummertoevoeging
+             land_ingeschreven = vblhstlandvanwaaringeschrevenomschrijving
       ) %>%
       collect
     
@@ -227,21 +251,21 @@ read_bzsprs <- function(con = NULL, brp_path = NULL){
                           gemeente_inschrijving = VBLGEMEENTEVANINSCHRIJVINGOMSCHRIJVING,
                           gemeente_inschrijving_vws = VWSGEMEENTEVANINSCHRIJVINGOMSCHRIJVING,
                           
+                          # adres kolommen
                           gemeente_deel = VBLGEMEENTEDEEL,
                           woonplaats = VBLWOONPLAATSNAAM, 
                           postcode = VBLPOSTCODE,
                           huisnummer = VBLHUISNUMMER,
                           huisletter = VBLHUISLETTER,
                           huisnummertoevoeging = VBLHUISNUMMERTOEVOEGING,
-                          
                           wijk_code = VBLWIJKCODE,
                           wijk_naam = VBLWIJKOMSCHRIJVING,
                           buurt_code_cipers = VBLPLANALOGISCHEWIJKCODE,
                           buurt_naam = VBLPLANALOGISCHEWIJKOMSCHRIJVING,
-                          
                           soort_pand_code = VBLSOORTPANDCODE,
                           soort_pand_omschrijving = VBLSOORTPANDOMSCHRIJVING,
                           
+                         
                           aanduidingverblijfstitelcode = VBTAANDUIDINGVERBLIJFSTITELCODE,
                           verblijfstitelvervallen = VBTVERBLIJFSTITELVERVALLEN,
                           aanduidingverblijfstitelomschrijving = VBTAANDUIDINGVERBLIJFSTITELOMSCHRIJVING,
