@@ -401,14 +401,17 @@ read_brpstam <- function(brp_bzsprs, adressen_inst, peil_datum){
   
   # 3. Status houder categorieen
   data <- mutate(data,
-                 statushouder = ifelse(aanduidingverblijfstitelcode %in% c(21,26), 
+                 statushouder_code = ifelse(aanduidingverblijfstitelcode %in% c(21,26), 
                                        1,2),
-                 statushouderplus = ifelse(aanduidingverblijfstitelcode %in% c(21,25,26,27), 
-                                           1,2)
+                 statushouder_omschrijving = ifelse(statushouder_code == 1, "Statushouder", "Geen statushouder"),
+                 statushouderplus_code = ifelse(aanduidingverblijfstitelcode %in% c(21,25,26,27), 
+                                           1,2),
+                 statushouderplus_omschrijving = ifelse(statushouderplus_code == 1, "Statushouderplus", "Geen statushouderplus"),
                  ) %>%
-    relocate(statushouder, .after = datumeindeverblijfstitel) %>%
-    relocate(statushouderplus, .after = statushouder)
-  
+    relocate(statushouder_code, .after = datumeindeverblijfstitel) %>%
+    relocate(statushouder_omschrijving, .after = statushouder_code) %>%
+    relocate(statushouderplus_code, .after = statushouder_omschrijving) %>%
+    relocate(statushouderplus_omschrijving, .after = statushouderplus_code)
   
   # 4. Burgerlijke staat labels
   burgstaat_key <- tibble::tribble(
