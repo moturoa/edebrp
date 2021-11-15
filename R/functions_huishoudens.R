@@ -220,7 +220,7 @@ bepaal_huishoudens <- function(peil_datum,
                 getrouwd = ifelse(getrouwd, "Getrouwd", "Niet getrouwd"),
                 getrouwd_zelfde_adres = ifelse(getrouwd_zelfde_adres, "Getrouwd, partner zelfde adres","Niet getrouwd of ander adres")
   ) %>% 
-    select(-verhuisd,-geboren,-overleden,-ingeschreven, -huishouden_overgebleven_persoon, -datum_overlijden) %>%
+    select(-verhuisd,-geboren,-overleden,-ingeschreven, -huishouden_overgebleven_persoon) %>%
     rename(peil_datum = datum_brp_tijdmachine) %>%
     relocate(peil_datum, .after = "id")
   

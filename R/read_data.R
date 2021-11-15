@@ -13,10 +13,10 @@ read_csv_source <- function(path, filename){
 
 #' Lees institutionele adressen data
 #' @export
-read_institutionele_adressen <- function(con = NULL, inst_path = NULL){
+read_institutionele_adressen <- function(con = NULL, inst_path = NULL, basename = "adressen_lijst.csv"){
   tictoc::tic("inst_adr")
   if(!is.null(inst_path)){
-    out <- read.csv2(file.path(inst_path, "adressen_lijst.csv"),
+    out <- read.csv2(file.path(inst_path, basename),
               na.strings = "") %>%
       janitor::clean_names() %>%
       mutate(adres = paste0(postcode, "_", huisnummer, "_",huisnummerletter))  
@@ -33,13 +33,13 @@ read_institutionele_adressen <- function(con = NULL, inst_path = NULL){
 
 #' Read huwelijk data
 #' @export
-read_huwelijk <- function(con = NULL, brp_path = NULL){
+read_huwelijk <- function(con = NULL, brp_path = NULL, basename = "BZSHUWQ00"){
   
   tictoc::tic("bzshuw")
   
   if(!is.null(brp_path)){
     
-    out <- read_csv_source(brp_path, "BZSHUWQ00") %>%
+    out <- read_csv_source(brp_path, basename) %>%
       select(bsn = PRSBURGERSERVICENUMMER,
              anr = PRSANUMMER,
              bsn_partner = HUWBURGERSERVICENUMMER,
@@ -87,12 +87,12 @@ read_huwelijk <- function(con = NULL, brp_path = NULL){
 
 #' Lees kinderen data
 #' @export
-read_kind <- function(con = NULL, brp_path = NULL){
+read_kind <- function(con = NULL, brp_path = NULL, basename = "BZSKINQ00"){
   
   tictoc::tic("bzskin")
   
   if(!is.null(brp_path)){
-    out <- read_csv_source(brp_path, "BZSKINQ00") %>%
+    out <- read_csv_source(brp_path, basename) %>%
       janitor::clean_names() %>%
       mutate(kndgeboortedatum = lubridate::ymd(kndgeboortedatum))  
   } else {
@@ -113,13 +113,13 @@ out
 
 #' Lees BRP adres historie data
 #' @export
-read_bzsc58 <- function(con = NULL, brp_path = NULL){
+read_bzsc58 <- function(con = NULL, brp_path = NULL, basename = "BZSC58Q00"){
   
   tictoc::tic("bzsc58")
   
   if(!is.null(brp_path)){
     
-    raw_data <- read_csv_source(brp_path, "BZSC58Q00") %>%
+    raw_data <- read_csv_source(brp_path, basename) %>%
       mutate(adres = paste0(VBLHSTPOSTCODE, "_", 
                             VBLHSTHUISNUMMER, "_", 
                             VBLHSTHUISLETTER, "_", 
@@ -149,8 +149,8 @@ read_bzsc58 <- function(con = NULL, brp_path = NULL){
              datum_inschrijving_ind = VBLHSTDATUMINSCHRIJVINGINDICATOR,
              datum_adres = VBLHSTDATUMAANVANGADRESHOUDING,
              datum_adres_ind = VBLHSTDATUMAANVANGADRESHOUDINGINDICATOR,
-             adres_buitenland = VBLHSTLANDADRESBUITENLANDOMSCHRIJVING,
-             datum_adres_buitenland = VBLHSTDATUMAANVANGADRESBUITENLAND,
+             #adres_buitenland = VBLHSTLANDADRESBUITENLANDOMSCHRIJVING,
+             #datum_adres_buitenland = VBLHSTDATUMAANVANGADRESBUITENLAND,
              datum_nederland = VBLHSTDATUMVESTIGINGINNEDERLAND,
              datum_nederland_ind = VBLHSTDATUMVESTIGINGINNEDERLANDINDICATOR,
              land_ingeschreven = VBLHSTLANDVANWAARINGESCHREVENOMSCHRIJVING
@@ -208,13 +208,13 @@ read_bzsc58 <- function(con = NULL, brp_path = NULL){
 
 #' Lees ruwe BZSPRS data
 #' @export
-read_bzsprs <- function(con = NULL, brp_path = NULL){
+read_bzsprs <- function(con = NULL, brp_path = NULL, basename = "BZSPRSQ00"){
   
   tictoc::tic("bzsprs")
   
   if(!is.null(brp_path)){
     
-    raw_data <- read_csv_source(brp_path, "BZSPRSQ00") %>%
+    raw_data <- read_csv_source(brp_path, basename) %>%
       mutate(adres = paste0(VBLPOSTCODE, "_", 
                             VBLHUISNUMMER, "_", 
                             VBLHUISLETTER, "_", 
@@ -501,9 +501,9 @@ read_historie <- function(brp_bzsc58, brpstam){
   brp_bzsc58 %>%
     mutate(
       datum_inschrijving = lubridate::ymd(datum_inschrijving),
-      datum_adres = lubridate::ymd(datum_adres),
-      datum_adres_buitenland = lubridate::ymd(datum_adres_buitenland),
-      datum_adres = coalesce(datum_adres, datum_adres_buitenland)
+      datum_adres = lubridate::ymd(datum_adres)
+      #datum_adres_buitenland = lubridate::ymd(datum_adres_buitenland)
+      #datum_adres = coalesce(datum_adres, datum_adres_buitenland)
     ) %>%
     remove_identical() %>%
     left_join(levenstabel, by = "anr")
