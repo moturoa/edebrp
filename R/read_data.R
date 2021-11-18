@@ -478,10 +478,11 @@ add_buurt_wijk_columns <- function(data){
     relocate(buurt_code, .after = buurt_code_cipers) %>%
     mutate(buurt_code_cbs  = paste0("BU0228", buurt_code)) %>%
     relocate(buurt_code_cbs, .after = buurt_code) %>%
-    mutate(wijk_code_cbs  = paste0("WK0228", wijk_code)) %>%
+    mutate(wijk_code_cbs  = paste0("WK0228", substr(wijk_code,2,3))) %>%
     relocate(wijk_code_cbs, .after = wijk_code)
   
   data$wijk_code_cbs[data$wijk_code_cbs == "WK0228"] <- NA
+  data$wijk_code_cbs[data$wijk_code_cbs == "WK0228NA"] <- NA
   data$buurt_code_cbs[data$buurt_code_cbs == "BU0228NA"] <- NA
   
 data
