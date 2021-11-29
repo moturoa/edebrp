@@ -365,7 +365,7 @@ read_bzsprs <- function(con = NULL, brp_path = NULL, basename = "BZSPRSQ00"){
 
 
 #' Lees stambestand (BZSPRSQ00)
-#' @export
+#' @exportq
 read_brpstam <- function(brp_bzsprs, adressen_inst, peil_datum){
   
   data(buurt_key)
@@ -374,7 +374,7 @@ read_brpstam <- function(brp_bzsprs, adressen_inst, peil_datum){
   # 1. Leeftijden, datums.
   data <- brp_bzsprs %>%
     mutate(
-      leeftijd = as.numeric(difftime(peil_datum, datum_geboorte, units = "weeks")) / 52,
+      
       minder18 = leeftijd < 18, 
       minder23 = leeftijd < 23,
       
@@ -382,8 +382,13 @@ read_brpstam <- function(brp_bzsprs, adressen_inst, peil_datum){
       datum_geboorte = as.Date(datum_geboorte),
       datum_overlijden = as.Date(datum_overlijden),
       datum_inschrijving = as.Date(datum_inschrijving),
-      datum_inschrijving_vws = as.Date(datum_inschrijving_vws),
-    )
+      datum_inschrijving_vws = as.Date(datum_inschrijving_vws)
+    ) 
+  
+  print(str(data$datum_geboorte))
+  print(str(peil_datum))
+  
+  data$leeftijd <- as.numeric(difftime(peil_datum, datum_geboorte, units = "weeks")) / 52,
   
   data$datum_inschrijving[data$datum_inschrijving == as.Date("1001-01-01")] <- NA
   data$datum_adres[data$datum_adres == as.Date("1001-01-01")] <- NA
