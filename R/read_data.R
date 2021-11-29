@@ -388,7 +388,7 @@ read_brpstam <- function(brp_bzsprs, adressen_inst, peil_datum){
   print(str(data$datum_geboorte))
   print(str(peil_datum))
   
-  data$leeftijd <- as.numeric(difftime(peil_datum, datum_geboorte, units = "weeks")) / 52,
+  data$leeftijd <- as.numeric(difftime(peil_datum, datum_geboorte, units = "weeks")) / 52
   
   data$datum_inschrijving[data$datum_inschrijving == as.Date("1001-01-01")] <- NA
   data$datum_adres[data$datum_adres == as.Date("1001-01-01")] <- NA
