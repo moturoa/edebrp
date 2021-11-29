@@ -375,9 +375,6 @@ read_brpstam <- function(brp_bzsprs, adressen_inst, peil_datum){
   data <- brp_bzsprs %>%
     mutate(
       
-      minder18 = leeftijd < 18, 
-      minder23 = leeftijd < 23,
-      
       datum_adres = as.Date(datum_adres),
       datum_geboorte = as.Date(datum_geboorte),
       datum_overlijden = as.Date(datum_overlijden),
@@ -389,6 +386,11 @@ read_brpstam <- function(brp_bzsprs, adressen_inst, peil_datum){
   print(str(peil_datum))
   
   data$leeftijd <- as.numeric(difftime(peil_datum, datum_geboorte, units = "weeks")) / 52
+  
+  data$minder18 = data$leeftijd < 18
+  data$minder23 = data$leeftijd < 23
+  
+  
   
   data$datum_inschrijving[data$datum_inschrijving == as.Date("1001-01-01")] <- NA
   data$datum_adres[data$datum_adres == as.Date("1001-01-01")] <- NA
