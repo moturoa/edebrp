@@ -16,8 +16,8 @@
 
 .peil_datum <- today() - 1
 
-con <- shintobag::shinto_db_connection("ede_dd_data", 
-                                       file = "c:/repos/ede/ede_datadienst_dashboard/conf/config.yaml")
+con <- shintobag::shinto_db_connection("ede_dd_data2", 
+                                       file = "d:/repos/ede_datadienst_dataportal/conf/config.yaml")
 
 
 # Voor Ede kant

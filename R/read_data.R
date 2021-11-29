@@ -378,15 +378,15 @@ read_brpstam <- function(brp_bzsprs, adressen_inst, peil_datum){
       minder18 = leeftijd < 18, 
       minder23 = leeftijd < 23,
       
-      datum_adres = lubridate::ymd(datum_adres),
-      datum_geboorte = lubridate::ymd(datum_geboorte),
-      datum_overlijden = lubridate::ymd(datum_overlijden),
-      datum_inschrijving = lubridate::ymd(datum_inschrijving),
-      datum_inschrijving_vws = lubridate::ymd(datum_inschrijving_vws),
+      datum_adres = as.Date(datum_adres),
+      datum_geboorte = as.Date(datum_geboorte),
+      datum_overlijden = as.Date(datum_overlijden),
+      datum_inschrijving = as.Date(datum_inschrijving),
+      datum_inschrijving_vws = as.Date(datum_inschrijving_vws),
     )
   
-  data$datum_inschrijving[data$datum_inschrijving == lubridate::ymd("1001-01-01")] <- NA
-  data$datum_adres[data$datum_adres == lubridate::ymd("1001-01-01")] <- NA
+  data$datum_inschrijving[data$datum_inschrijving == as.Date("1001-01-01")] <- NA
+  data$datum_adres[data$datum_adres == as.Date("1001-01-01")] <- NA
   
   data <- mutate(data, 
                  datum_adres = coalesce(datum_adres, datum_inschrijving)
@@ -501,8 +501,8 @@ read_historie <- function(brp_bzsc58, brpstam){
   
   brp_bzsc58 %>%
     mutate(
-      datum_inschrijving = lubridate::ymd(datum_inschrijving),
-      datum_adres = lubridate::ymd(datum_adres)
+      datum_inschrijving = as.Date(datum_inschrijving),
+      datum_adres = as.Date(datum_adres)
       #datum_adres_buitenland = lubridate::ymd(datum_adres_buitenland)
       #datum_adres = coalesce(datum_adres, datum_adres_buitenland)
     ) %>%
