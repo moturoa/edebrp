@@ -385,7 +385,7 @@ read_brpstam <- function(brp_bzsprs, adressen_inst, peil_datum){
   print(str(data$datum_geboorte))
   print(str(peil_datum))
   
-  data$leeftijd <- as.numeric(difftime(peil_datum, datum_geboorte, units = "weeks")) / 52
+  data$leeftijd <- as.numeric(difftime(peil_datum, data$datum_geboorte, units = "weeks")) / 52
   
   data$minder18 = data$leeftijd < 18
   data$minder23 = data$leeftijd < 23
