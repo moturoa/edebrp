@@ -374,13 +374,12 @@ read_brpstam <- function(brp_bzsprs, adressen_inst, peil_datum){
   # 1. Leeftijden, datums.
   data <- brp_bzsprs %>%
     mutate(
-      
       datum_adres = as.Date(datum_adres),
       datum_geboorte = as.Date(datum_geboorte),
       datum_overlijden = as.Date(datum_overlijden),
       datum_inschrijving = as.Date(datum_inschrijving),
       datum_inschrijving_vws = as.Date(datum_inschrijving_vws)
-    ) 
+    )
   
   print(str(data$datum_geboorte))
   print(str(peil_datum))
@@ -482,6 +481,8 @@ add_buurt_wijk_columns <- function(data){
   data(buurt_key)
   
   data <- left_join(data, buurt_key, by = "buurt_code_cipers") %>%
+    mutate(buurt_code = na_if(buurt_code,"0"),
+           wijk_code=  na_if(wijk_code,"000")) %>%
     relocate(buurt_code, .after = buurt_code_cipers) %>%
     mutate(buurt_code_cbs  = paste0("BU0228", buurt_code)) %>%
     relocate(buurt_code_cbs, .after = buurt_code) %>%
