@@ -23,6 +23,34 @@ brp_summary <- function(data){
 }
 
 
+leeftijd_categorie_5jr <- function(leeftijd){
+  
+  v <- seq(0,100, by= 5)
+  
+  d_lab <- as.data.frame(cbind(v, c(v[2:length(v)],200))) %>%
+    setNames(c("x","y")) %>%
+    mutate(y = y-1)
+  labs <- with(d_lab, paste(x,"t/m", y,"jaar"))
+  labs[length(labs)] <- "100 jaar en ouder"
+  
+  labs[findInterval(leeftijd,v)]
+  
+}
+
+leeftijdcategorie_senior <- function(leeftijd){
+  
+  case_when(
+    
+    leeftijd >= 80 ~ "80 jaar en ouder (dubbele vergrijzing)",
+    leeftijd >= 75 ~ "75 jaar en ouder (vergrijzing2)",
+    leeftijd >= 65 ~ "65 jaar en ouder (vergrijzing1)",
+    TRUE ~ "0 - 64 jaar"
+  )
+  
+}
+
+
+
 
 #------BRP Tijdmachine -----
 
@@ -218,7 +246,15 @@ bepaal_huishoudens <- function(peil_datum,
                 kind = ifelse(kind, "Heeft ouders op adres", "Heeft geen ouders op adres"),
                 broerzus = ifelse(broerzus, "Heeft broer/zus op adres", "Heeft geen broer/zus op adres"),
                 getrouwd = ifelse(getrouwd, "Getrouwd", "Niet getrouwd"),
-                getrouwd_zelfde_adres = ifelse(getrouwd_zelfde_adres, "Getrouwd, partner zelfde adres","Niet getrouwd of ander adres")
+                getrouwd_zelfde_adres = ifelse(getrouwd_zelfde_adres, "Getrouwd, partner zelfde adres","Niet getrouwd of ander adres"),
+                leeftijd_categorie_5jr = leeftijd_categorie_5jr(leeftijd),
+                leeftijdcategorie_senior = leeftijdcategorie_senior(leeftijd),
+                beroepsbevolking_64 = ifelse(leeftijd >= 15 & leeftijd <= 64, 
+                                             "Potentiele beroepsbevolking (65-)",
+                                             "Geen beroepsbevolking"),
+                beroepsbevolking_74 = ifelse(leeftijd >= 15 & leeftijd <= 74, 
+                                             "Potentiele beroepsbevolking (75-)",
+                                             "Geen beroepsbevolking")
   ) %>% 
     select(-verhuisd,-geboren,-overleden,-ingeschreven, -huishouden_overgebleven_persoon) %>%
     rename(peil_datum = datum_brp_tijdmachine) %>%
