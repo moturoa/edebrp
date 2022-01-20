@@ -33,7 +33,7 @@ read_institutionele_adressen <- function(con = NULL, inst_path = NULL, basename 
 
 #' Read huwelijk data
 #' @export
-read_huwelijk <- function(con = NULL, brp_path = NULL, basename = "BZSHUWQ00"){
+read_huwelijk <- function(con = NULL, brp_path = NULL, basename = "BZSHUWQ00_pink.csv"){
   
   tictoc::tic("bzshuw")
   
@@ -87,7 +87,7 @@ read_huwelijk <- function(con = NULL, brp_path = NULL, basename = "BZSHUWQ00"){
 
 #' Lees kinderen data
 #' @export
-read_kind <- function(con = NULL, brp_path = NULL, basename = "BZSKINQ00"){
+read_kind <- function(con = NULL, brp_path = NULL, basename = "BZSKINQ00_pink.csv"){
   
   tictoc::tic("bzskin")
   
@@ -113,7 +113,7 @@ out
 
 #' Lees BRP adres historie data
 #' @export
-read_bzsc58 <- function(con = NULL, brp_path = NULL, basename = "BZSC58Q00"){
+read_bzsc58 <- function(con = NULL, brp_path = NULL, basename = "BZSC58Q00_pink.csv"){
   
   tictoc::tic("bzsc58")
   
@@ -210,7 +210,7 @@ read_bzsc58 <- function(con = NULL, brp_path = NULL, basename = "BZSC58Q00"){
 
 #' Lees ruwe BZSPRS data
 #' @export
-read_bzsprs <- function(con = NULL, brp_path = NULL, basename = "BZSPRSQ00"){
+read_bzsprs <- function(con = NULL, brp_path = NULL, basename = "bzsprsq00_pink.csv"){
   
   tictoc::tic("bzsprs")
   
