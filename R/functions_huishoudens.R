@@ -141,8 +141,7 @@ brp_tijdmachine <- function(historie, brpstam, peil_datum){
       geboren = datum_geboorte <= !!peil_datum,
       ingeschreven = gemeente_inschrijving == "Ede") %>%
     filter(!overleden, geboren, ingeschreven,
-           adres != "NA_NA_NA_NA")
-  
+           !adres %in% c("NA_NA_NA_NA","___"))
   
   adres_historie <- bind_rows(
     select(brpstam, anr, adres, datum_adres, datum_inschrijving, gemeente_inschrijving,

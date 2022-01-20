@@ -5,31 +5,68 @@
 
 devtools::load_all()
 
-brp_path <- "d:/repos/ede/DATA/datadienst/dd-data/brp/"
-inst_path <- "d:/repos/ede/DATA/datadienst/dd-data/institutionele_adressen/"
 
 
-bzsc <- read_bzsc58(brp_path = brp_path, basename = "BZSC58Q00_pink.csv")
+from_disk <- FALSE
 
 
-bzsc2 <- read_csv_source(brp_path, "BZSC58Q00_pink.csv")
+if(from_disk){
+  
+  brp_path <- "d:/repos/ede/DATA/datadienst/dd-data/brp/"
+  inst_path <- "d:/repos/ede/DATA/datadienst/dd-data/institutionele_adressen/"
+  
+  bzsc <- read_bzsc58(brp_path = brp_path)
+  
+  bzsprs <- read_bzsprs(brp_path = brp_path) 
+  
+  adressen_inst <- read_institutionele_adressen(inst_path = inst_path)
+  
+  huwelijk <- read_huwelijk(brp_path = brp_path)
+  kind <- read_kind(brp_path = brp_path)
+  
+  brpstam <- read_brpstam(bzsprs, adressen_inst, .peil_datum)
+  
+  dim(bzsc)
+  dim(bzsprs)
+  dim(huwelijk)
+  dim(kind)
+  dim(brpstam)
+  
+  historie <- read_historie(bzsc, brpstam)
+  
+} else {
+  
+  
+  bzsc <- read_bzsc58(con = con)
+  
+  bzsprs <- read_bzsprs(con = con) 
+  
+  adressen_inst <- read_institutionele_adressen(con = con)
+  
+  huwelijk <- read_huwelijk(con = con)
+  kind <- read_kind(con = con)
+  
+  brpstam <- read_brpstam(bzsprs, adressen_inst, .peil_datum)
+  
+  dim(bzsc)
+  dim(bzsprs)
+  dim(huwelijk)
+  dim(kind)
+  dim(brpstam)
+  
+  historie <- read_historie(bzsc, brpstam)
+  
+}
 
-bzsprs <- read_bzsprs(brp_path = brp_path, basename = "bzsprsq00_pink.csv") 
-
-adressen_inst <- read_institutionele_adressen(inst_path = inst_path)
-
-huwelijk <- read_huwelijk(brp_path = brp_path, basename = "BZSHUWQ00_pink.csv")
-kind <- read_kind(brp_path = brp_path, basename = "BZSKINQ00_pink.csv")
-
-brpstam <- read_brpstam(bzsprs, adressen_inst, .peil_datum)
-
-historie <- read_historie(bzsc, brpstam)
-
-
+.peil_datum <- as.Date("2022-1-18")
 hh <- bepaal_huishoudens(.peil_datum, brpstam, historie, huwelijk, kind, adressen_inst,
                          buurt_wijk_codes = FALSE)
 
 hh2 <- add_buurt_wijk_columns(hh)
+
+
+
+
 
 
 check1 <- function(id = NULL){
