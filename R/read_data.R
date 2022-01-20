@@ -492,7 +492,7 @@ read_brpstam <- function(brp_bzsprs, adressen_inst, peil_datum, date_format = c(
 add_buurt_wijk_columns <- function(data){
   
   # foute levering 2022-01-20
-  if(length(unique(data$buurt_code_cipers)) < 20){
+  if(length(unique(data$buurt_code_cipers)) < 30){
     
     data(buurt_koppel_fix_pink)
     data$buurt_code_cipers <- NULL
