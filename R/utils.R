@@ -58,3 +58,11 @@ table_frac <- function(column, data){
   tab <- table(data[[column]])
   unname(tab[2] / sum(tab[1:2]))
 }
+
+
+drop_columns <- function(data, what){
+  what <- intersect(names(data),what)
+  dplyr::select(data, -any_of(what))
+}
+
+

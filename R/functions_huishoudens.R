@@ -54,10 +54,10 @@ leeftijdcategorie_senior <- function(leeftijd){
 
 #------BRP Tijdmachine -----
 
-#' Bepaal inwonerbestand op een willekeurige datum
-#' @param historie Dataframe ingelezen met 
+#' BRP tijdmachine, ouder CIPERS levering
+#' @param historie Dataframe ingelezen met read_historie
 #' @export
-brp_tijdmachine <- function(historie, brpstam, peil_datum){
+brp_tijdmachine_cipers <- function(historie, brpstam, peil_datum){
   
   stopifnot(is.Date(peil_datum))
   
@@ -129,6 +129,56 @@ brp_tijdmachine <- function(historie, brpstam, peil_datum){
   data 
 }
 
+#' BRP tijdmachine
+#' @export
+brp_tijdmachine <- function(historie, brpstam, peil_datum){
+  
+  stopifnot(is.Date(peil_datum))
+  
+  data <- brpstam %>%
+    mutate(datum_brp_tijdmachine = peil_datum,
+      overleden = !is.na(datum_overlijden) & datum_overlijden <= !!peil_datum,
+      geboren = datum_geboorte <= !!peil_datum,
+      ingeschreven = gemeente_inschrijving == "Ede") %>%
+    filter(!overleden, geboren, ingeschreven,
+           adres != "NA_NA_NA_NA")
+  
+  
+  adres_historie <- bind_rows(
+    select(brpstam, anr, adres, datum_adres, datum_inschrijving, gemeente_inschrijving,
+           gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
+           wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving
+    ),
+    select(historie, anr, adres, datum_adres, datum_inschrijving, gemeente_inschrijving, 
+           gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
+           wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving
+    )
+  ) %>% 
+    filter(gemeente_inschrijving == "Ede",
+           adres != "NA_NA_NA_NA",
+           datum_adres < peil_datum) %>%
+    group_by(anr) %>%   # hier laatste adres voor de peildatum vinden per persoon
+    filter(datum_adres == max(datum_adres)) %>%
+    select(anr, adres, datum_adres, datum_inschrijving,
+           gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
+           wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving) %>%
+    distinct(anr, .keep_all = TRUE) %>%
+    ungroup()
+  
+  data <- left_join(select(data, -datum_inschrijving, -datum_adres,
+                           -gemeente_deel,-woonplaats,-postcode,-huisnummer,-huisletter,
+                           -huisnummertoevoeging,-wijk_code,-wijk_naam,-buurt_code_cipers,
+                           -buurt_naam,-soort_pand_code,-soort_pand_omschrijving) %>% 
+                      rename(adres_cur = adres), 
+                    adres_historie, by = "anr") %>%
+    mutate(adres = coalesce(adres, adres_cur)) %>%
+    select(-adres_cur)
+  
+  
+  data 
+}
+
+
 # Tel aantal kinderen per persoon op een bepaalde peildatum
 current_kinderen <- function(data, peil_datum){
   
@@ -147,10 +197,18 @@ bepaal_huishoudens <- function(peil_datum,
                                verhuis_wezen = TRUE, 
                                ethniciteit = TRUE,
                                buurt_wijk_codes = TRUE,
+                               format = c("new","old"),
                                ...){
   
+  format <- match.arg(format)
+  
   # Filter op peildatum
-  brp <- brp_tijdmachine(historie, brpstam, peil_datum)
+  if(format == "old"){
+    brp <- brp_tijdmachine_cipers(historie, brpstam, peil_datum)  
+  } else {
+    brp <- brp_tijdmachine(historie, brpstam, peil_datum)  
+  }
+  
   
   # Start punt 'adres voor bepaling huishouden': adres_huishouden.
   # Dit kan later afwijken omdat 'wezen' verhuisd worden
@@ -221,19 +279,12 @@ bepaal_huishoudens <- function(peil_datum,
   
   # verwijder kolommen die niet nodig zijn in output.
   # (doen we hier omdat deze functie ook in ssd_join_brp wordt gebruikt)
-  brp <- select(brp, 
-                -woonplaats, 
-                -gemeente_inschrijving,
-                -gemeente_inschrijving_vws,
-                -datum_inschrijving_vws,
-                -ingangsdatumverblijfstitelindicator, 
-                -datumeindeverblijfstitelindicator, 
-                -prs_document_datum_indicator, 
-                -gzv_document_datum_indicator, 
-                -ou1_document_datum_indicator, 
-                -ou2_document_datum_indicator, 
-                -datum_inschrijving_eerst
-  )
+  brp <- drop_columns(brp,  
+                c("woonplaats", "gemeente_inschrijving","gemeente_inschrijving_vws",
+                  "datum_inschrijving_vws","ingangsdatumverblijfstitelindicator", 
+                  "datumeindeverblijfstitelindicator", "prs_document_datum_indicator", 
+                  "gzv_document_datum_indicator", "ou1_document_datum_indicator", 
+                  "ou2_document_datum_indicator", "datum_inschrijving_eerst"))
   
   # Laatste bewerkingen
   brp <- mutate(brp,
@@ -256,7 +307,7 @@ bepaal_huishoudens <- function(peil_datum,
                                              "Potentiele beroepsbevolking (75-)",
                                              "Geen beroepsbevolking")
   ) %>% 
-    select(-verhuisd,-geboren,-overleden,-ingeschreven, -huishouden_overgebleven_persoon) %>%
+    drop_columns(c("verhuisd","geboren","overleden","ingeschreven", "huishouden_overgebleven_persoon")) %>%
     rename(peil_datum = datum_brp_tijdmachine) %>%
     relocate(peil_datum, .after = "id")
   
@@ -273,11 +324,6 @@ bepaal_huishoudens <- function(peil_datum,
   if(buurt_wijk_codes){
     brp <- add_buurt_wijk_columns(brp)
   }
-  
-  
-  
-  
-  
   
   return(brp)  
 }

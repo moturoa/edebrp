@@ -407,3 +407,17 @@ usethis::use_data(
   overwrite = TRUE
 )
 
+
+
+
+# alleen te maken met oude levering
+make_buurt_koppel_pink <- function(hh){
+  select(hh, buurt_code_cipers, buurt_code_cbs, buurt_naam) %>% distinct  
+}
+
+# hh is output van bepaal_huishouden (test_new_cipers)
+# buurt_koppel_fix_pink <- make_buurt_koppel_pink(hh)
+# buurt_koppel_fix_pink$buurt_naam[buurt_koppel_fix_pink$buurt_naam == "Componistenbuurt"] <- "Komponistenbuurt"
+#usethis::use_data(buurt_koppel_fix_pink, overwrite = TRUE)
+
+
