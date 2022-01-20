@@ -182,8 +182,8 @@ read_bzsc58 <- function(con = NULL, brp_path = NULL, basename = "BZSC58Q00_pink.
              datum_inschrijving_ind = vblhstdatuminschrijvingindicator,
              datum_adres = vblhstdatumaanvangadreshouding,
              datum_adres_ind = vblhstdatumaanvangadreshoudingindicator,
-             adres_buitenland = vblhstlandadresbuitenlandomschrijving,
-             datum_adres_buitenland = vblhstdatumaanvangadresbuitenland,
+             #adres_buitenland = vblhstlandadresbuitenlandomschrijving,
+             #datum_adres_buitenland = vblhstdatumaanvangadresbuitenland,
              datum_nederland = vblhstdatumvestiginginnederland,
              datum_nederland_ind = vblhstdatumvestiginginnederlandindicator,
              land_ingeschreven = vblhstlandvanwaaringeschrevenomschrijving
