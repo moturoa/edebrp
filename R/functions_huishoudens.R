@@ -138,7 +138,9 @@ brp_tijdmachine <- function(historie, brpstam, peil_datum){
   data <- brpstam %>%
     mutate(datum_brp_tijdmachine = peil_datum,
       overleden = !is.na(datum_overlijden) & datum_overlijden <= !!peil_datum,
-      geboren = is.na(datum_geboorte) | datum_geboorte <= !!peil_datum) %>%
+      geboren = datum_geboorte <= !!peil_datum
+      #datum_geboorte_missing = is.na(datum_geboorte)
+      ) %>%
     filter(!overleden, geboren)
   
   # Laatste adres gegevens net voor de peil datum (1 rij per persoon)
