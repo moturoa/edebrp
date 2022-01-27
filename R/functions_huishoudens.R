@@ -138,11 +138,10 @@ brp_tijdmachine <- function(historie, brpstam, peil_datum){
   data <- brpstam %>%
     mutate(datum_brp_tijdmachine = peil_datum,
       overleden = !is.na(datum_overlijden) & datum_overlijden <= !!peil_datum,
-      geboren = datum_geboorte <= !!peil_datum,
-      ingeschreven = gemeente_inschrijving == "Ede") %>%
-    filter(!overleden, geboren, ingeschreven,
-           !adres %in% c("NA_NA_NA_NA","___"))
+      geboren = is.na(datum_geboorte) | datum_geboorte <= !!peil_datum) %>%
+    filter(!overleden, geboren)
   
+  # Laatste adres gegevens net voor de peil datum (1 rij per persoon)
   adres_historie <- bind_rows(
     select(brpstam, anr, adres, datum_adres, datum_inschrijving, gemeente_inschrijving,
            gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
@@ -153,25 +152,26 @@ brp_tijdmachine <- function(historie, brpstam, peil_datum){
            wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving
     )
   ) %>% 
-    filter(gemeente_inschrijving == "Ede",
-           adres != "NA_NA_NA_NA",
+    filter(anr %in% !!data$anr,
            datum_adres < peil_datum) %>%
     group_by(anr) %>%   # hier laatste adres voor de peildatum vinden per persoon
     filter(datum_adres == max(datum_adres)) %>%
-    select(anr, adres, datum_adres, datum_inschrijving,
+    select(anr, adres, datum_adres, datum_inschrijving,gemeente_inschrijving,
            gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
            wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving) %>%
     distinct(anr, .keep_all = TRUE) %>%
     ungroup()
   
-  data <- left_join(select(data, -datum_inschrijving, -datum_adres,
+  data <- left_join(select(data, -datum_inschrijving, -datum_adres,-gemeente_inschrijving,
                            -gemeente_deel,-woonplaats,-postcode,-huisnummer,-huisletter,
                            -huisnummertoevoeging,-wijk_code,-wijk_naam,-buurt_code_cipers,
                            -buurt_naam,-soort_pand_code,-soort_pand_omschrijving) %>% 
                       rename(adres_cur = adres), 
                     adres_historie, by = "anr") %>%
     mutate(adres = coalesce(adres, adres_cur)) %>%
-    select(-adres_cur)
+    select(-adres_cur) %>%
+    filter(gemeente_inschrijving == "Ede",
+           adres != "___")   # ontbrekende adressen, we gaan ervan uit dat deze personen niet in Ede wonen (?!)
   
   
   data 

@@ -1,7 +1,7 @@
 
 
 
-.peil_datum <- as.Date("2022-1-18")
+.peil_datum <- as.Date("2019-1-1")
 
 devtools::load_all()
 
