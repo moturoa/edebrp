@@ -49,7 +49,33 @@ leeftijdcategorie_senior <- function(leeftijd){
   
 }
 
-
+leeftijdcategorie_school <- function(leeftijd, type = c("1","2")){
+  
+  type <- match.arg(type)
+  
+  if(type == "1"){
+    case_when(
+      
+      leeftijd >= 65 ~ "65 jaar en ouder",
+      leeftijd >= 18 ~ "18 t/m 64 jaar",
+      leeftijd >= 13 ~ "13 t/m 17 jaar (middelbare schoolleeftijd)",
+      leeftijd >= 4 ~ "4 t/m 12 jaar (basisschoolleeftijd)",
+      leeftijd >= 0 ~ "0 t/m 3 jaar (voorschoolse periode)",
+      TRUE ~ ""
+    )
+  } else {
+    case_when(
+      
+      leeftijd >= 65 ~ "65 jaar en ouder",
+      leeftijd >= 18 ~ "18 t/m 64 jaar",
+      leeftijd >= 5 ~ "5 t/m 17 jaar (leerplichtige jeugd)",
+      leeftijd == 4 ~ "4 jarigen (mag naar basisschool)",
+      leeftijd >= 0 ~ "0 t/m 3 jaar (voorschoolse periode)",
+      TRUE ~ ""
+    )
+  }
+  
+}
 
 
 #------BRP Tijdmachine -----
@@ -300,7 +326,9 @@ bepaal_huishoudens <- function(peil_datum,
                 getrouwd = ifelse(getrouwd, "Getrouwd", "Niet getrouwd"),
                 getrouwd_zelfde_adres = ifelse(getrouwd_zelfde_adres, "Getrouwd, partner zelfde adres","Niet getrouwd of ander adres"),
                 leeftijd_categorie_5jr = leeftijd_categorie_5jr(leeftijd),
-                leeftijdcategorie_senior = leeftijdcategorie_senior(leeftijd),
+                leeftijd_categorie_senior = leeftijdcategorie_senior(leeftijd),
+                leeftijd_categorie_school_1 = leeftijdcategorie_school(leeftijd, type = "1"),
+                leeftijd_categorie_school_2 = leeftijdcategorie_school(leeftijd, type = "2"),
                 beroepsbevolking_64 = ifelse(leeftijd >= 15 & leeftijd <= 64, 
                                              "Potentiele beroepsbevolking (65-)",
                                              "Geen beroepsbevolking"),
