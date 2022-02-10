@@ -167,7 +167,8 @@ brp_tijdmachine <- function(historie, brpstam, peil_datum){
       geboren = datum_geboorte <= !!peil_datum
       #datum_geboorte_missing = is.na(datum_geboorte)
       ) %>%
-    filter(!overleden, geboren)
+    filter(!overleden, geboren) %>%
+    distinct(bsn, .keep_all = TRUE)
   
   # Laatste adres gegevens net voor de peil datum (1 rij per persoon)
   adres_historie <- bind_rows(
