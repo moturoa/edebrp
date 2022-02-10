@@ -199,8 +199,8 @@ brp_tijdmachine <- function(historie, brpstam, peil_datum){
     mutate(adres = coalesce(adres, adres_cur)) %>%
     select(-adres_cur) %>%
     filter(gemeente_inschrijving == "Ede",
-           adres != "___")   # ontbrekende adressen, we gaan ervan uit dat deze personen niet in Ede wonen (?!)
-  
+           !(adres %in% c("___","NA_NA_NA_NA")))   
+  # ontbrekende adressen, we gaan ervan uit dat deze personen niet in Ede wonen
   
   data 
 }

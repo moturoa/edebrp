@@ -4,7 +4,11 @@
 \alias{read_institutionele_adressen}
 \title{Lees institutionele adressen data}
 \usage{
-read_institutionele_adressen(con = NULL, inst_path = NULL)
+read_institutionele_adressen(
+  con = NULL,
+  inst_path = NULL,
+  basename = "adressen_lijst.csv"
+)
 }
 \description{
 Lees institutionele adressen data

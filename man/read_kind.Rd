@@ -4,7 +4,7 @@
 \alias{read_kind}
 \title{Lees kinderen data}
 \usage{
-read_kind(con = NULL, brp_path = NULL)
+read_kind(con = NULL, brp_path = NULL, basename = "BZSKINQ00_pink.csv")
 }
 \description{
 Lees kinderen data

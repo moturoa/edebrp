@@ -4,7 +4,7 @@
 \alias{read_bzsprs}
 \title{Lees ruwe BZSPRS data}
 \usage{
-read_bzsprs(con = NULL, brp_path = NULL)
+read_bzsprs(con = NULL, brp_path = NULL, basename = "bzsprsq00_pink.csv")
 }
 \description{
 Lees ruwe BZSPRS data

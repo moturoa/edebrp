@@ -562,6 +562,8 @@ read_historie <- function(brp_bzsc58, brpstam, date_format = c("new","old")){
 
 add_institutioneel_adres <- function(data, adressen_inst){
   
+  if(is.null(adressen_inst))return(data)
+  
   # 5. Institutionele adressen : zoals in de syntax van Ilse, join
   # op postcode+huisnummer als geen huisletter, en op 
   # postcode+huisnummer+huisletter als wel huisletter.

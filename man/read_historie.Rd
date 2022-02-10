@@ -4,7 +4,7 @@
 \alias{read_historie}
 \title{Historie data, bijgewerkt}
 \usage{
-read_historie(brp_bzsc58, brpstam)
+read_historie(brp_bzsc58, brpstam, date_format = c("new", "old"))
 }
 \description{
 Historie data, bijgewerkt

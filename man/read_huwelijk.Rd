@@ -4,7 +4,7 @@
 \alias{read_huwelijk}
 \title{Read huwelijk data}
 \usage{
-read_huwelijk(con = NULL, brp_path = NULL)
+read_huwelijk(con = NULL, brp_path = NULL, basename = "BZSHUWQ00_pink.csv")
 }
 \description{
 Read huwelijk data

@@ -2,13 +2,10 @@
 % Please edit documentation in R/functions_huishoudens.R
 \name{brp_tijdmachine}
 \alias{brp_tijdmachine}
-\title{Bepaal inwonerbestand op een willekeurige datum}
+\title{BRP tijdmachine}
 \usage{
 brp_tijdmachine(historie, brpstam, peil_datum)
 }
-\arguments{
-\item{historie}{Dataframe ingelezen met}
-}
 \description{
-Bepaal inwonerbestand op een willekeurige datum
+BRP tijdmachine
 }

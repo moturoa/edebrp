@@ -4,7 +4,12 @@
 \alias{read_brpstam}
 \title{Lees stambestand (BZSPRSQ00)}
 \usage{
-read_brpstam(brp_bzsprs, adressen_inst, peil_datum)
+read_brpstam(
+  brp_bzsprs,
+  adressen_inst,
+  peil_datum,
+  date_format = c("new", "old")
+)
 }
 \description{
 Lees stambestand (BZSPRSQ00)

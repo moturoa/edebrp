@@ -4,7 +4,7 @@
 \alias{read_bzsc58}
 \title{Lees BRP adres historie data}
 \usage{
-read_bzsc58(con = NULL, brp_path = NULL)
+read_bzsc58(con = NULL, brp_path = NULL, basename = "BZSC58Q00_pink.csv")
 }
 \description{
 Lees BRP adres historie data

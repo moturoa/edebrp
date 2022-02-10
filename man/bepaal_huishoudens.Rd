@@ -14,6 +14,7 @@ bepaal_huishoudens(
   verhuis_wezen = TRUE,
   ethniciteit = TRUE,
   buurt_wijk_codes = TRUE,
+  format = c("new", "old"),
   ...
 )
 }
