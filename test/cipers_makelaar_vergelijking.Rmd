@@ -1,0 +1,191 @@
+---
+title: 'BRP: Makelaar / CIPERS'
+output: 
+  word_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+
+suppressPackageStartupMessages({
+  library(knitr)
+  library(dplyr)
+  library(data.table)
+  library(glue)
+  library(lubridate)
+  
+  library(edebrp)
+})
+
+```
+
+
+
+```{r utils}
+
+  make_adres_historie_new <- function(brpstam, historie, peil_datum){
+    
+    data <- brpstam %>%
+    mutate(datum_brp_tijdmachine = peil_datum,
+      overleden = !is.na(datum_overlijden) & datum_overlijden <= !!peil_datum,
+      geboren = datum_geboorte <= !!peil_datum
+      #datum_geboorte_missing = is.na(datum_geboorte)
+      ) %>%
+    filter(!overleden, geboren)
+    
+    bind_rows(
+    select(brpstam, bsn, anr, adres, datum_adres, datum_inschrijving, gemeente_inschrijving,
+           gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
+           wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving
+    ),
+    select(historie, bsn, anr, adres, datum_adres, datum_inschrijving, gemeente_inschrijving, 
+           gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
+           wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving
+    )
+  ) %>% 
+    filter(anr %in% !!data$anr,
+           datum_adres < peil_datum) %>%
+    group_by(anr) %>%   # hier laatste adres voor de peildatum vinden per persoon
+    filter(datum_adres == max(datum_adres)) %>%
+    select(bsn, anr, adres, datum_adres, datum_inschrijving,gemeente_inschrijving,
+           gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
+           wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving) %>%
+    distinct(anr, .keep_all = TRUE) %>%
+    ungroup()
+    
+  }
+
+
+  make_adres_historie_old <- function(brpstam, historie, peil_datum){
+    
+    bind_rows(
+      select(brpstam,bsn, anr, adres, datum_adres, datum_inschrijving, gemeente_inschrijving,
+             gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
+             wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving
+      ),
+      select(historie, bsn, anr, adres, datum_adres, datum_inschrijving, gemeente_inschrijving, 
+             gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
+             wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving
+             )
+    ) %>% 
+      filter(gemeente_inschrijving == "Ede",
+             adres != "NA_NA_NA_NA",
+             datum_adres < peil_datum) %>%
+      group_by(anr) %>%
+      filter(datum_adres == max(datum_adres)) %>%
+      select(bsn, anr, adres, datum_adres, datum_inschrijving,
+             gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
+             wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving) %>%
+      distinct(anr, .keep_all = TRUE) %>%
+    ungroup()
+    
+  }
+
+  
+```
+
+
+
+# Inleiding
+
+Cipers oude levering, Makelaarsuite nieuwe levering.
+
+Snapshots op 18/1/2022
+
+
+
+```{r, cache=TRUE, echo = FALSE, include=FALSE, warning=FALSE}
+path_cipers <- "d:/repos/ede/DATA/brp_snapshots/cipers_20220118/"
+path_makelaar <- "d:/repos/ede/DATA/brp_snapshots/pink_20220119/"
+#"d:/repos/ede/DATA/datadienst/dd-data/brp/"
+  
+bzsc_c <- read_bzsc58(brp_path = path_cipers, basename = "BZSC58Q00")
+bzshuw_c <- read_huwelijk(brp_path = path_cipers, basename = "BZSHUWQ00")
+bzskin_c <- read_kind(brp_path = path_cipers, basename = "BZSKINQ00")
+bzsprs_c <- read_bzsprs(brp_path = path_cipers, basename = "BZSPRSQ00")
+
+bzsc_m <- read_bzsc58(brp_path = path_makelaar, basename = "BZSC58Q00_pink.csv")
+bzshuw_m <- read_huwelijk(brp_path = path_makelaar, basename = "BZSHUWQ00_pink.csv")
+bzskin_m <- read_kind(brp_path = path_makelaar, basename = "BZSKINQ00_pink.csv")
+bzsprs_m <- read_bzsprs(brp_path = path_makelaar, basename = "bzsprsq00_pink.csv")
+
+```
+
+
+
+# Vergelijking
+
+```{r, cache = TRUE}
+
+brpstam_c <- read_brpstam(bzsprs_c, adressen_inst = NULL, peil_datum = as.Date("2022-1-18"), date_format = "old")
+
+brpstam_m <- read_brpstam(bzsprs_m, adressen_inst = NULL, peil_datum = as.Date("2022-1-18"), date_format = "new")
+  
+historie_c <- read_historie(bzsc_c, brpstam_c, date_format = "old")
+historie_m <- read_historie(bzsc_m, brpstam_m, date_format = "new")
+
+ah_c <- make_adres_historie_old(brpstam_c, historie_c, as.Date("2022-1-18"))
+ah_m <- make_adres_historie_new(brpstam_m, historie_m, as.Date("2022-1-18"))
+
+
+# inwoners 1/18
+brp_c <- brp_tijdmachine_cipers(historie_c, brpstam_c, as.Date("2022-1-18"))
+brp_m <- brp_tijdmachine(historie_m, brpstam_m, as.Date("2022-1-18"))
+
+
+b <- brp_m$bsn[duplicated(brp_m$bsn)]
+dat_bad <- filter(brp_m, bsn %in% !!b)
+
+```
+
+
+Om een directe vergelijking te kunnen maken heb ik de inwoners in Ede bepaald op 1/18/2022. Hierbij worden geboorte, overlijden datums, en meest recente verhuisbewegingen meegenomen. 
+
+Cipers aantal inwoners = `r nrow(brp_c)`
+Makelaar aantal inwoners = `r nrow(brp_m)`
+
+Er zijn dus met de nieuwe data levering `r nrow(brp_c) - nrow(brp_m)` minder inwoners.
+
+
+
+```{r}
+
+bsns_c <- unique(brp_c$bsn)
+bsns_m <- unique(brp_m$bsn)
+
+any(duplicated(brp_c$bsn))
+any(duplicated(brp_m$bsn))
+
+any(bsns_c == "")
+any(bsns_m == "")
+
+any(is.na(bsns_c))
+any(is.na(bsns_m))
+
+
+bsns_mis <- bsns_c[!bsns_c %in% bsns_m]
+bsns_ext <- bsns_m[!bsns_m %in% bsns_c]
+
+
+comp1 <- function(bsn){
+  
+  
+  ahc <- filter(brpstam_c, bsn == !!bsn) %>% mutate(what = "CIPERS") %>% relocate(what)
+  ahm <- filter(brpstam_m, bsn == !!bsn) %>% mutate(what = "Makelaar") %>% relocate(what)
+  
+  bind_rows(
+    select(ahc, what, bsn, adres, datum_adres, datum_inschrijving, datum_overlijden, datum_geboorte), 
+    select(ahm, what, bsn, adres, datum_adres, datum_inschrijving, datum_overlijden, datum_geboorte)
+  )
+  
+}
+
+
+
+```
+
+
+
+
