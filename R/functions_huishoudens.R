@@ -180,7 +180,14 @@ brp_tijdmachine <- function(historie, brpstam, peil_datum){
            gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
            wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving
     )
-  ) %>% 
+  ) 
+  
+  
+  # Soms wordt datum_adres niet ingevuld als datum_inschrijving dat wel is
+  adres_historie$datum_adres[which(adres_historie$datum_adres == as.Date("1900-1-1"))] <- 
+    adres_historie$datum_inschrijving[which(adres_historie$datum_adres == as.Date("1900-1-1"))]
+  
+  adres_historie <- adres_historie %>% 
     filter(anr %in% !!data$anr,
            datum_adres < peil_datum) %>%
     group_by(anr) %>%   # hier laatste adres voor de peildatum vinden per persoon
