@@ -17,6 +17,7 @@ suppressPackageStartupMessages({
   library(lubridate)
   
   library(edebrp)
+  library(writexl)
 })
 
 ```
@@ -134,9 +135,17 @@ ah_m <- make_adres_historie_new(brpstam_m, historie_m, as.Date("2022-1-18"))
 brp_c <- brp_tijdmachine_cipers(historie_c, brpstam_c, as.Date("2022-1-18"))
 brp_m <- brp_tijdmachine(historie_m, brpstam_m, as.Date("2022-1-18"))
 
+saveRDS(brp_m, "test/brp_m.rds")
+saveRDS(brp_c, "test/brp_c.rds")
 
-b <- brp_m$bsn[duplicated(brp_m$bsn)]
-dat_bad <- filter(brp_m, bsn %in% !!b)
+saveRDS(brpstam_m, "test/brpstam_m.rds")
+saveRDS(brpstam_c, "test/brpstam_c.rds")
+
+saveRDS(historie_m, "test/historie_m.rds")
+saveRDS(historie_c, "test/historie_c.rds")
+
+saveRDS(ah_m, "test/ah_m.rds")
+saveRDS(ah_c, "test/ah_c.rds")
 
 ```
 
@@ -155,15 +164,20 @@ Er zijn dus met de nieuwe data levering `r nrow(brp_c) - nrow(brp_m)` minder inw
 bsns_c <- unique(brp_c$bsn)
 bsns_m <- unique(brp_m$bsn)
 
-any(duplicated(brp_c$bsn))
-any(duplicated(brp_m$bsn))
+fails <- c(
+  any(duplicated(bsns_c)),
+  any(duplicated(brp_m$bsn)),
+  
+  any(bsns_c == ""),
+  any(bsns_m == ""),
+  
+  any(is.na(bsns_c)),
+  any(is.na(bsns_m))
+)
 
-any(bsns_c == "")
-any(bsns_m == "")
-
-any(is.na(bsns_c))
-any(is.na(bsns_m))
-
+if(any(fails)){
+  warning("Fails! missing/duplicate bsns")
+}
 
 bsns_mis <- bsns_c[!bsns_c %in% bsns_m]
 bsns_ext <- bsns_m[!bsns_m %in% bsns_c]
@@ -176,13 +190,101 @@ comp1 <- function(bsn){
   ahm <- filter(brpstam_m, bsn == !!bsn) %>% mutate(what = "Makelaar") %>% relocate(what)
   
   bind_rows(
-    select(ahc, what, bsn, adres, datum_adres, datum_inschrijving, datum_overlijden, datum_geboorte), 
-    select(ahm, what, bsn, adres, datum_adres, datum_inschrijving, datum_overlijden, datum_geboorte)
+    select(ahc, what, bsn, adres, datum_adres, datum_inschrijving, datum_overlijden, datum_geboorte, gemeente_inschrijving, gemeente_inschrijving_vws, datum_inschrijving_vws), 
+    select(ahm, what, bsn, adres, datum_adres, datum_inschrijving, datum_overlijden, datum_geboorte, gemeente_inschrijving, gemeente_inschrijving_vws, datum_inschrijving_vws)
+  )
+  
+}
+
+comp2 <- function(bsn){
+  
+  
+  ahc <- filter(ah_c, bsn == !!bsn) %>% mutate(what = "CIPERS") %>% relocate(what)
+  ahm <- filter(ah_m, bsn == !!bsn) %>% mutate(what = "Makelaar") %>% relocate(what)
+  
+  bind_rows(
+    select(ahc, what, bsn, adres, datum_adres, datum_inschrijving), 
+    select(ahm, what, bsn, adres, datum_adres, datum_inschrijving)
   )
   
 }
 
 
+
+# 1. BSNs die voorkomen in Cipers BRP (1/18), niet in Makelaar BRP (1/18)
+stam_mis_m <- filter(brpstam_m, bsn %in% !!bsns_mis)
+
+#
+mean(is.na(stam_mis_m$datum_geboorte))
+
+stam_mis_m_geboorte <- filter(stam_mis_m, is.na(datum_geboorte))
+
+write_xlsx(select(stam_mis_m_geboorte, bsn, anr), "test/brpstam_mis_geboortedatum.xlsx")
+
+
+# de rest mist verhuisbewegingen
+stam_mis_m_geen_geboorte <- filter(stam_mis_m, !is.na(datum_geboorte))
+
+
+adres_m <- filter(brpstam_m, bsn %in% !!stam_mis_m_geen_geboorte$bsn) %>%
+  select(
+    bsn,
+    makelaar_datum_overlijden = datum_overlijden,
+    makelaar_datum_adres = datum_adres,
+    makelaar_adres = adres,
+    makelaar_gemeente_inschrijving = gemeente_inschrijving
+  )
+
+adres_c <- filter(brpstam_c, bsn %in% !!stam_mis_m_geen_geboorte$bsn) %>%
+  select(
+    bsn,
+    cipers_datum_overlijden = datum_overlijden,
+    cipers_datum_adres = datum_adres,
+    cipers_adres = adres,
+    cipers_gemeente_inschrijving = gemeente_inschrijving
+  )
+
+stam_mis_m_geen_geboorte <- stam_mis_m_geen_geboorte %>%
+  select(bsn, anr) %>%
+  left_join(adres_m, by = "bsn") %>%
+  left_join(adres_c, by = "bsn")
+
+
+write_xlsx(stam_mis_m_geen_geboorte, "test/brpstam_mis_andere_verschillen.xlsx")
+
+
+# 2. BSNs die voorkomen in Makelaar BRP, niet in Cipers BRP (1/18)
+stam_ext_m <- filter(brpstam_m, bsn %in% !!bsns_ext)
+
+
+cadres_m <- filter(brpstam_m, bsn %in% !!stam_ext_m$bsn) %>%
+  select(
+    bsn,
+    makelaar_datum_adres = datum_adres,
+    makelaar_adres = adres,
+    makelaar_gemeente_inschrijving = gemeente_inschrijving
+  )
+
+cadres_c <- filter(brpstam_c, bsn %in% !!stam_ext_m$bsn) %>%
+  select(
+    bsn,
+    cipers_datum_adres = datum_adres,
+    cipers_adres = adres,
+    cipers_gemeente_inschrijving = gemeente_inschrijving,
+    cipers_gemeente_inschrijving_vws = gemeente_inschrijving_vws,
+    cipers_datum_inschrijving_vws = datum_inschrijving_vws
+  )
+
+stam_ext_m <- stam_ext_m %>%
+  select(bsn, anr) %>%
+  left_join(cadres_m, by = "bsn") %>%
+  left_join(cadres_c, by = "bsn")
+
+write_xlsx(stam_ext_m, "test/brpstam_extra_verschillen.xlsx")
+
+nrow(stam_ext_m)
+nrow(stam_mis_m_geen_geboorte)
+nrow(stam_mis_m_geboorte)
 
 ```
 
