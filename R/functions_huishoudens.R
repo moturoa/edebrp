@@ -189,7 +189,7 @@ brp_tijdmachine <- function(historie, brpstam, peil_datum){
   
   adres_historie <- adres_historie %>% 
     filter(anr %in% !!data$anr,
-           datum_adres < peil_datum) %>%
+           datum_adres <= peil_datum) %>%   # fix 24/2/2022 : ook op de peildatum meenemen
     group_by(anr) %>%   # hier laatste adres voor de peildatum vinden per persoon
     filter(datum_adres == max(datum_adres)) %>%
     select(anr, adres, datum_adres, datum_inschrijving,gemeente_inschrijving,
