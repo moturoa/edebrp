@@ -456,14 +456,14 @@ huishouden_functie <- function(adres_huishouden,
     }
   }
   
-  # 1 persoon.
-  if(n_personen_adres[1] == 1){
-    return(anr[1])
-  }
-  
   # institutioneel huishouden: ieder voor zich.
   if(institutioneel_adres[1]){
     return(anr)
+  }
+  
+  # 1 persoon.
+  if(n_personen_adres[1] == 1){
+    return(anr[1])
   }
   
   # Exact twee personen, geen ouder/kind relaties, niet getrouwd.
