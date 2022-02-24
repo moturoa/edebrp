@@ -42,8 +42,8 @@ leeftijdcategorie_senior <- function(leeftijd){
   case_when(
     
     leeftijd >= 80 ~ "80 jaar en ouder (dubbele vergrijzing)",
-    leeftijd >= 75 ~ "75 jaar en ouder (vergrijzing2)",
-    leeftijd >= 65 ~ "65 jaar en ouder (vergrijzing1)",
+    leeftijd >= 75 ~ "75 t/m 79 jaar (vergrijzing2)",
+    leeftijd >= 65 ~ "65 t/m 74 jaar (vergrijzing1)",
     TRUE ~ "0 - 64 jaar"
   )
   
