@@ -435,13 +435,14 @@ read_brpstam <- function(brp_bzsprs, adressen_inst, peil_datum, date_format = c(
   # 4. Burgerlijke staat labels
   burgstaat_key <- tibble::tribble(
     ~burgerlijke_staat, ~burgerlijke_staat_omschrijving,
-    "A", "Achtergebleven gereg. partner",
-    "B", "Gescheiden of beëindigd geregistreerd partnerschap",
-    "H", "Gehuwd",
-    "O", "Ongehuwd, Geen huwelijk/gereg. partnerschap",
-    "P", "Geregistreerd partner",
-    "S", "Gescheiden",
-    "W", "Weduwe/weduwenaar")
+    0,"Onbekend",
+    1,"Ongehuwd en nooit gehuwd geweest",
+    2,"Gehuwd",
+    3,"Gescheiden",
+    4,"Weduwe/weduwnaar",
+    5,"Partnerschap",
+    6,"Partnerschap beëindigd",
+    7,"Achtergebleven partner")
   
   # join, en zet kolom naast de code.
   data <- left_join(data, burgstaat_key, by = "burgerlijke_staat") %>% 
