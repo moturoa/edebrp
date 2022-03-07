@@ -315,7 +315,7 @@ bepaal_huishoudens <- function(peil_datum,
   # verwijder kolommen die niet nodig zijn in output.
   # (doen we hier omdat deze functie ook in ssd_join_brp wordt gebruikt)
   brp <- drop_columns(brp,  
-                c("woonplaats", "gemeente_inschrijving","gemeente_inschrijving_vws",
+                c("gemeente_inschrijving","gemeente_inschrijving_vws",
                   "datum_inschrijving_vws","ingangsdatumverblijfstitelindicator", 
                   "datumeindeverblijfstitelindicator", "prs_document_datum_indicator", 
                   "gzv_document_datum_indicator", "ou1_document_datum_indicator", 
