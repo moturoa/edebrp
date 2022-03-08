@@ -249,19 +249,31 @@ bepaal_huishoudens <- function(peil_datum,
   # Dit kan later afwijken omdat 'wezen' verhuisd worden
   brp <- mutate(brp, adres_huishouden = adres)
   
-  # Aantal huwelijken.
-  n_huwelijk <- count(huwelijk, anr, name = "aantal_huwelijken")
-  
-  # Huwelijk data. 
+  # Huwelijk data (huidige partner) en aantal huwelijken
   huwelijk_cur <- huwelijk %>%
     current_huwelijk(peil_datum) %>%
-    select(anr, anr_partner, datum_huwelijk)
+    select(anr, anr_partner, bsn_partner, datum_huwelijk)
+  
+  n_huwelijk <- count(huwelijk, anr, name = "aantal_huwelijken")
   
   brp <- left_join(brp, huwelijk_cur, by = "anr")
-  #pm_log("Huwelijken gefilterd.")
   
   brp <- left_join(brp, n_huwelijk, by = "anr") %>%
     mutate(aantal_huwelijken = replace_na(aantal_huwelijken, 0))
+  
+  
+  # Nu dat we de huidige partner hebben toegevoegd, kunnen we extra statushouder code bepalen
+  b_sh_anrs <- filter(brp, aanduidingverblijfstitelcode %in% c(25,26,27)) %>%
+    pull(anr)
+  brp <- mutate(brp, 
+                statushouder_suite4 = case_when(
+                  aanduidingverblijfstitelcode %in% c(26,27) ~ "Ja",
+                  aanduidingverblijfstitelcode == 21 & anr_partner %in% !!b_sh_anrs ~ "Nee, mogelijk gezinsmigrant",
+                  TRUE ~ "Nee"
+                )) %>%
+    relocate(statushouder_suite4, .after = statushouderplus_omschrijving)
+  
+  
   
   # Aantal kinderen (alleen voor beschrijvende kolom)
   n_kinderen <- current_kinderen(kind, peil_datum)
