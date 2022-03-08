@@ -426,6 +426,10 @@ read_brpstam <- function(brp_bzsprs, adressen_inst, peil_datum, date_format = c(
                  statushouderplus_code = ifelse(aanduidingverblijfstitelcode %in% c(21,25,26,27), 
                                            1,2),
                  statushouderplus_omschrijving = ifelse(statushouderplus_code == 1, "Statushouderplus", "Geen statushouderplus"),
+                 
+                 
+                 
+                 
                  ) %>%
     relocate(statushouder_code, .after = datumeindeverblijfstitel) %>%
     relocate(statushouder_omschrijving, .after = statushouder_code) %>%

@@ -25,19 +25,20 @@ add_ethniciteit_columns <- function(data){
                    geboorte_land_moeder_code == "" ~ NA_character_,
                    geboorte_land_moeder_code == "9999" ~ NA_character_,
                    geboorte_land_moeder_code == "0000" ~ NA_character_,
+                   geboorte_land_moeder_code == "0" ~ NA_character_,
                    TRUE ~ geboorte_land_moeder_code
                  ),
                  geboorte_land_vader_code = case_when(
                    geboorte_land_vader_code == "" ~ NA_character_,
                    geboorte_land_vader_code == "9999" ~ NA_character_,
                    geboorte_land_vader_code == "0000" ~ NA_character_,
+                   geboorte_land_vader_code == "0" ~ NA_character_,
                    TRUE ~ geboorte_land_vader_code
                  ))
   
   data <- mutate(data,
-                 
-                 geboorte_land_vader_code = coalesce(geboorte_land_vader_code, geboorte_land_moeder_code),
                  geboorte_land_moeder_code = coalesce(geboorte_land_moeder_code, geboorte_land_code),
+                 geboorte_land_vader_code = coalesce(geboorte_land_vader_code, geboorte_land_moeder_code),
                  geboorte_land_code = coalesce(geboorte_land_code, geboorte_land_moeder_code))
   
   
