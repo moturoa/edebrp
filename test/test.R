@@ -22,8 +22,8 @@ con <- shintobag::shinto_db_connection("ede_dd_data2",
 
 # Voor Ede kant
 if(FALSE){
-  brp_path <- "c:/repos/ede/DATA/datadienst/dd-data/brp"
-  inst_path <- "c:/repos/ede/DATA/datadienst/dd-data/institutionele_adressen"
+  brp_path <- "d:/repos/ede/DATA/datadienst/dd-data/brp"
+  inst_path <- "d:/repos/ede/DATA/datadienst/dd-data/institutionele_adressen"
   
   bzsprs2 <- read_bzsprs(brp_path = brp_path)
   adressen_inst2 <- read_institutionele_adressen(inst_path = inst_path)
@@ -38,38 +38,45 @@ if(FALSE){
 if(FALSE){
   
   brp_path <- "test"
-  inst_path <- "c:/repos/ede/DATA/datadienst/dd-data/institutionele_adressen"
+  inst_path <- "test"
   
   
-  bzsc2 <- read_bzsc58(brp_path = brp_path, basename = "BZSC58Q00_pink.csv")
-  bzsprs2 <- read_bzsprs(brp_path = brp_path, basename = "bzsprsq00_pink.csv")
+  bzsc2 <- read_bzsc58(brp_path = brp_path, basename = "BZSC58Q00_pink.csv") %>%
+    mutate(datum_inschrijving = ymd(datum_inschrijving),
+           datum_adres = ymd(datum_adres)
+    )
+  
+  
+  bzsprs2 <- read_bzsprs(brp_path = brp_path, basename = "bzsprsq00_pink.csv") %>%
+    mutate(datum_adres = ymd(datum_adres),
+           datum_geboorte = ymd(datum_geboorte),
+           datum_overlijden = ymd(datum_overlijden),
+           datum_inschrijving = ymd(datum_inschrijving),
+           datum_inschrijving_vws = ymd(datum_inschrijving)
+           )
+  
     
-    
-  r <- readLines('test/bzsprsq00_pink.csv',2)
-  cbind(
-    strsplit(r[1], ";")[[1]],
-    strsplit(r[2], ";")[[1]]
-  )
-  
-  nms <- strsplit(r[1], ";")[[1]]
-  nms <- c(nms[1], "extra", nms[2:length(nms)])
-  names(bzsprs2) <- nms
-  
-  
-  data <- read.csv2("test/bzsprsq00_pink.csv", nrows = 100, skip = 1, header = F)
-  ncol(data)
-  length(nms)
-  
-  
-  
   adressen_inst2 <- read_institutionele_adressen(inst_path = inst_path)
   
   huwelijk2 <- read_huwelijk(brp_path = brp_path, basename = "BZSHUWQ00_pink.csv")
   kind2 <- read_kind(brp_path = brp_path, basename = "BZSKINQ00_pink.csv")
   
-  brpstam <- read_brpstam(bzsprs2,
+  brpstam2 <- read_brpstam(bzsprs2,
                           adressen_inst2,
                           .peil_datum)
+  
+  historie2 <- read_historie(bzsc2, brpstam2)
+  
+  adres_historie2 <- bind_rows(
+    select(brpstam2, anr, adres, datum_adres, datum_inschrijving, gemeente_inschrijving,
+           gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
+           wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving
+    ),
+    select(historie2, anr, adres, datum_adres, datum_inschrijving, gemeente_inschrijving, 
+           gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
+           wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving
+    )
+  )
   
 }
 
@@ -90,27 +97,42 @@ brpstam <- read_brpstam(bzsprs,
                         .peil_datum)
 
 # optioneel.
-brpstam2 <- add_ethniciteit_columns(brpstam)
+#brpstam2 <- add_ethniciteit_columns(brpstam)
 
 # Verblijfshistorie (626k rijen)
 historie <- read_historie(bzsc, brpstam)
+
+
+adres_historie <- bind_rows(
+  select(brpstam, anr, adres, datum_adres, datum_inschrijving, gemeente_inschrijving,gemeente_inschrijving_vws,datum_inschrijving_vws,
+         gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
+         wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving
+  ),
+  select(historie, anr, adres, datum_adres, datum_inschrijving, gemeente_inschrijving, 
+         gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
+         wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving
+  )
+)
+
 
 tictoc::toc()
 
 # 
 tictoc::tic("Huishoudens")
-brp_huishoudens_huidig <- bepaal_huishoudens(.peil_datum, 
-                                             brpstam, 
-                                             historie, 
-                                             huwelijk, 
-                                             kind, 
-                                             adressen_inst, 
-                                             verhuis_wezen = TRUE,
-                                             leeftijd_delta_koppel = 8,
-                                             datum_adres_koppel = 15,
-                                             ethniciteit = TRUE,
-                                             buurt_wijk_codes = TRUE
-                                             )
+hh <- bepaal_huishoudens(.peil_datum, 
+                         brpstam, 
+                         historie, 
+                         huwelijk, 
+                         kind, 
+                         adressen_inst, 
+                         verhuis_wezen = TRUE,
+                         leeftijd_delta_koppel = 8,
+                         datum_adres_koppel = 15,
+                         ethniciteit = FALSE,
+                         buurt_wijk_codes = TRUE
+                         )
+
+hh2 <- add_ethniciteit_columns(hh)
 
 brp_summary(brp_huishoudens_huidig)
 tictoc::toc()
