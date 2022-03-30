@@ -4,7 +4,7 @@ Title: Ede BRP in a package
 Version: 0.7
 Author: Remko Duursma
 Maintainer: Remko Duursma <remko@shintolabs.nl>
-Description: Huishoudens bepalen, BRP extracten, etc.
+Description: BRP extracten, Huishoudens bepalen, Huishoud categorieen, Ethniciteit, specifiek voor Ede.
 Depends: 
     DBI, R (>= 2.10), lubridate, dplyr, tidyr, glue, futile.logger, dbplyr, tictoc, janitor
 License: CC0

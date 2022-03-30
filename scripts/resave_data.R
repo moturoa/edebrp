@@ -1,4 +1,8 @@
 
+# Remake the datasets in this package
+# Allen zijn koppeltabellen voor ethniciteit bepalingen
+
+
 library(dplyr)
 
 
