@@ -129,10 +129,18 @@ hh <- bepaal_huishoudens(.peil_datum,
                          leeftijd_delta_koppel = 8,
                          datum_adres_koppel = 15,
                          ethniciteit = FALSE,
-                         buurt_wijk_codes = TRUE
+                         buurt_wijk_codes = FALSE
                          )
 
 hh2 <- add_ethniciteit_columns(hh)
+
+filter(data, bsn == "U1s4M6VgH") %>%
+  select(geboorte_land_code, geboorte_land_moeder_code, #geboorte_land_moeder_code_her,
+         geboorte_land_vader_code) #geboorte_land_moeder_code_her) 
+  # mutate(geboorte_land_vader_code = coalesce(geboorte_land_vader_code, geboorte_land_moeder_code),
+  #        geboorte_land_moeder_code = coalesce(geboorte_land_moeder_code, geboorte_land_code),
+  #        geboorte_land_code = coalesce(geboorte_land_code, geboorte_land_moeder_code))
+
 
 brp_summary(brp_huishoudens_huidig)
 tictoc::toc()

@@ -5,3 +5,5 @@
 
 *.Rproj
 *.rds
+
+test/cipers_makelaar/cipers_makelaar_vergelijking_cache/
