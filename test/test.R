@@ -1,85 +1,12 @@
 
-# 
-# library(lubridate)
-# library(dplyr)
-# library(DBI)
-# library(tidyr)
-# library(glue)
-# library(futile.logger)
-# library(dbplyr)
-# 
-# 
- devtools::load_all()
-
-#library(edebrp)
 
 
-.peil_datum <- today() - 1
+devtools::load_all()
+
+.peil_datum <- as.Date("2020-1-1")  #today() - 1
 
 con <- shintobag::shinto_db_connection("ede_dd_data2", 
-                                       file = "d:/repos/ede_datadienst_dataportal/conf/config.yaml")
-
-
-# Voor Ede kant
-if(FALSE){
-  brp_path <- "d:/repos/ede/DATA/datadienst/dd-data/brp"
-  inst_path <- "d:/repos/ede/DATA/datadienst/dd-data/institutionele_adressen"
-  
-  bzsprs2 <- read_bzsprs(brp_path = brp_path)
-  adressen_inst2 <- read_institutionele_adressen(inst_path = inst_path)
-  bzsc2 <- read_bzsc58(brp_path = brp_path)
-  huwelijk2 <- read_huwelijk(brp_path = brp_path)
-  kind2 <- read_kind(brp_path = brp_path)
-  
-}
-
-
-# pink
-if(FALSE){
-  
-  brp_path <- "test"
-  inst_path <- "test"
-  
-  
-  bzsc2 <- read_bzsc58(brp_path = brp_path, basename = "BZSC58Q00_pink.csv") %>%
-    mutate(datum_inschrijving = ymd(datum_inschrijving),
-           datum_adres = ymd(datum_adres)
-    )
-  
-  
-  bzsprs2 <- read_bzsprs(brp_path = brp_path, basename = "bzsprsq00_pink.csv") %>%
-    mutate(datum_adres = ymd(datum_adres),
-           datum_geboorte = ymd(datum_geboorte),
-           datum_overlijden = ymd(datum_overlijden),
-           datum_inschrijving = ymd(datum_inschrijving),
-           datum_inschrijving_vws = ymd(datum_inschrijving)
-           )
-  
-    
-  adressen_inst2 <- read_institutionele_adressen(inst_path = inst_path)
-  
-  huwelijk2 <- read_huwelijk(brp_path = brp_path, basename = "BZSHUWQ00_pink.csv")
-  kind2 <- read_kind(brp_path = brp_path, basename = "BZSKINQ00_pink.csv")
-  
-  brpstam2 <- read_brpstam(bzsprs2,
-                          adressen_inst2,
-                          .peil_datum)
-  
-  historie2 <- read_historie(bzsc2, brpstam2)
-  
-  adres_historie2 <- bind_rows(
-    select(brpstam2, anr, adres, datum_adres, datum_inschrijving, gemeente_inschrijving,
-           gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
-           wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving
-    ),
-    select(historie2, anr, adres, datum_adres, datum_inschrijving, gemeente_inschrijving, 
-           gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
-           wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving
-    )
-  )
-  
-}
-
+                                       file = "c:/repos/ede_datadienst_dataportal/conf/config.yaml")
 
 
 # Uit DB
@@ -96,23 +23,8 @@ brpstam <- read_brpstam(bzsprs,
                         adressen_inst,
                         .peil_datum)
 
-# optioneel.
-#brpstam2 <- add_ethniciteit_columns(brpstam)
-
 # Verblijfshistorie (626k rijen)
 historie <- read_historie(bzsc, brpstam)
-
-
-adres_historie <- bind_rows(
-  select(brpstam, anr, adres, datum_adres, datum_inschrijving, gemeente_inschrijving,gemeente_inschrijving_vws,datum_inschrijving_vws,
-         gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
-         wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving
-  ),
-  select(historie, anr, adres, datum_adres, datum_inschrijving, gemeente_inschrijving, 
-         gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
-         wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving
-  )
-)
 
 
 tictoc::toc()
@@ -132,17 +44,11 @@ hh <- bepaal_huishoudens(.peil_datum,
                          buurt_wijk_codes = FALSE
                          )
 
+
 hh2 <- add_ethniciteit_columns(hh)
 
-filter(data, bsn == "U1s4M6VgH") %>%
-  select(geboorte_land_code, geboorte_land_moeder_code, #geboorte_land_moeder_code_her,
-         geboorte_land_vader_code) #geboorte_land_moeder_code_her) 
-  # mutate(geboorte_land_vader_code = coalesce(geboorte_land_vader_code, geboorte_land_moeder_code),
-  #        geboorte_land_moeder_code = coalesce(geboorte_land_moeder_code, geboorte_land_code),
-  #        geboorte_land_code = coalesce(geboorte_land_code, geboorte_land_moeder_code))
+brp_summary(hh)
 
-
-brp_summary(brp_huishoudens_huidig)
 tictoc::toc()
 
 

@@ -580,18 +580,10 @@ add_institutioneel_adres <- function(data, adressen_inst){
   inst2 <- filter(adressen_inst, is.na(huisnummerletter)) %>%
     mutate(adres = paste0(postcode, "_", huisnummer))
   
-  data <- mutate(data, 
-                 adres1 = paste0(postcode, "_", 
-                                 huisnummer, "_",
-                                 huisletter),
-                 adres2 = paste0(postcode, "_", 
-                                 huisnummer
-                 )
-  )
-  data$institutioneel_adres <- data$adres1 %in% inst1$adres |
-    data$adres2 %in% inst2$adres
+  adres1 <- with(data, paste0(postcode, "_", huisnummer, "_",huisletter))
+  adres2 <- with(data, paste0(postcode, "_", huisnummer))
   
-  data <- select(data, -adres1, -adres2)
+  data$institutioneel_adres <- adres1 %in% inst1$adres | adres2 %in% inst2$adres
   
 data
 }
