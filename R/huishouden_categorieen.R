@@ -16,7 +16,9 @@ huishouden_categorieen <- function(data){
            huishouden_categorie_2 = huishouden_categorie(n_personen_huishouden, 
                                                          ouder,kind,broerzus, leeftijd, 
                                                          anr, anr_partner,
-                                                         institutioneel_adres, level = "23")) %>%
+                                                         institutioneel_adres, level = "23"),
+           huishouden_met_cat = paste0(huishouden, "_", as.integer(as.factor(huishouden_categorie_1)))
+           ) %>%
     ungroup
   
   
