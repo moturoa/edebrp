@@ -243,7 +243,8 @@ bepaal_huishoudens <- function(peil_datum,
   
   
   # Huishouden categorieen, n_personen_huishouden updaten.
-  brp <- huishouden_categorieen(brp)
+  brp <- add_huishouden_categorieen(brp)  
+  
   
   # verwijder kolommen die niet nodig zijn in output.
   # (doen we hier omdat deze functie ook in ssd_join_brp wordt gebruikt)

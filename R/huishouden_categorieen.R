@@ -1,5 +1,5 @@
 
-huishouden_categorieen <- function(data){
+add_huishouden_categorieen <- function(data){
   
   data <- group_by(data, adres_huishouden) %>%
     mutate(
@@ -17,7 +17,20 @@ huishouden_categorieen <- function(data){
                                                          ouder,kind,broerzus, leeftijd, 
                                                          anr, anr_partner,
                                                          institutioneel_adres, level = "23"),
-           huishouden_met_cat = paste0(huishouden, "_", as.integer(as.factor(huishouden_categorie_1)))
+           
+           huishouden_type_code = recode(huishouden_categorie_1, 
+                                       "Alleenstaande" = "1",
+                                       "Eenoudergezin met inwonende kinderen boven de 18 jaar" = "1",
+                                       "Eenoudergezin met inwonende kinderen onder de 18 jaar" = "2",
+                                       "Eenoudergezin met inwonende kinderen zowel onder de 18 als 18 jaar en ouder"  = "2",
+                                       "Huishoudens met meerdere generaties achter één voordeur" = "5",
+                                       "Overig huishouden" = "5",
+                                       "Paar met inwonende kinderen boven de 18 jaar" = "3",
+                                       "Paar met inwonende kinderen onder de 18 jaar" = "4",
+                                       "Paar met inwonende kinderen zowel onder de 18 als 18 jaar en ouder" = "4",
+                                       "Paar zonder kind" = "3",
+                                       "Persoon in institutionele huishouden" = "5"), 
+           huishouden_met_cat = paste0(huishouden, "_", huishouden_type_code)
            ) %>%
     ungroup
   
