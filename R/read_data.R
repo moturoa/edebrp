@@ -494,6 +494,7 @@ read_brpstam <- function(brp_bzsprs, adressen_inst, peil_datum, date_format = c(
 
 #' Buurt/wijk codes toevoegen
 #' @export
+#' @importFrom stringr str_pad
 add_buurt_wijk_columns <- function(data){
   
   # foute levering 2022-01-20
@@ -515,7 +516,7 @@ add_buurt_wijk_columns <- function(data){
     relocate(buurt_code, .after = buurt_naam) %>%
     mutate(buurt_code_cbs  = paste0("BU0228", buurt_code)) %>%
     relocate(buurt_code_cbs, .after = buurt_code) %>%
-    mutate(wijk_code_cbs  = paste0("WK0228", str_pad(wijk_code, width = 2, pad = "0"))) %>%
+    mutate(wijk_code_cbs  = paste0("WK0228", stringr::str_pad(wijk_code, width = 2, pad = "0"))) %>%
     relocate(wijk_code_cbs, .after = wijk_code) %>%
     relocate(buurt_code_cipers, .after = buurt_code)
   

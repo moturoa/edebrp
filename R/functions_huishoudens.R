@@ -80,86 +80,9 @@ leeftijdcategorie_school <- function(leeftijd, type = c("1","2")){
 
 #------BRP Tijdmachine -----
 
-#' BRP tijdmachine, ouder CIPERS levering
-#' @param historie Dataframe ingelezen met read_historie
-#' @export
-brp_tijdmachine_cipers <- function(historie, brpstam, peil_datum){
-  
-  stopifnot(is.Date(peil_datum))
-  
-  # maak tabel met datum eerste inschrijving persoon
-  tbl_datum_inschrijving <- filter(historie, datum_inschrijving < peil_datum) %>%
-    mutate(datum_inschrijving = lubridate::ymd(datum_inschrijving)) %>%
-    group_by(anr) %>%
-    mutate(datum_inschrijving_eerst = filter_last_leading(gemeente_inschrijving, 
-                                                          datum_inschrijving, 
-                                                          val = "Ede")) %>%
-    ungroup %>%
-    select(anr, datum_inschrijving_eerst) %>%
-    distinct
-  
-  data <- left_join(brpstam, tbl_datum_inschrijving, by = "anr")
-  
-  data <- data %>%
-    mutate(datum_brp_tijdmachine = peil_datum,
-           datum_geboorte = lubridate::ymd(datum_geboorte),
-           datum_overlijden = lubridate::ymd(datum_overlijden),
-           datum_inschrijving = lubridate::ymd(datum_inschrijving),
-           datum_inschrijving_vws = lubridate::ymd(datum_inschrijving_vws),
-           datum_inschrijving_eerst = dplyr::coalesce(datum_inschrijving_eerst, datum_inschrijving))
-  
-  data <- data %>%
-    mutate(
-      verhuisd = !is.na(datum_inschrijving_vws) & datum_inschrijving_vws <= !!peil_datum,
-      overleden = !is.na(datum_overlijden) & datum_overlijden <= !!peil_datum,
-      geboren = datum_geboorte <= !!peil_datum,
-      ingeschreven = datum_inschrijving_eerst <= !!peil_datum) %>% 
-    filter(!verhuisd,
-           !overleden,
-           ingeschreven,
-           geboren,
-           gemeente_inschrijving != "Onbekend")
-  
-  
-    adres_historie <- bind_rows(
-      select(brpstam, anr, adres, datum_adres, datum_inschrijving, gemeente_inschrijving,
-             gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
-             wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving
-      ),
-      select(historie, anr, adres, datum_adres, datum_inschrijving, gemeente_inschrijving, 
-             gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
-             wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving
-             )
-    ) %>% 
-      filter(gemeente_inschrijving == "Ede",
-             adres != "NA_NA_NA_NA",
-             datum_adres < peil_datum) %>%
-      group_by(anr) %>%
-      filter(datum_adres == max(datum_adres)) %>%
-      select(anr, adres, datum_adres, datum_inschrijving,
-             gemeente_deel,woonplaats,postcode,huisnummer,huisletter,huisnummertoevoeging,wijk_code,
-             wijk_naam,buurt_code_cipers,buurt_naam,soort_pand_code,soort_pand_omschrijving) %>%
-      distinct(anr, .keep_all = TRUE) %>%
-    ungroup()
-      
-    data <- left_join(select(data, -datum_inschrijving, -datum_adres,
-                             -gemeente_deel,-woonplaats,-postcode,-huisnummer,-huisletter,
-                             -huisnummertoevoeging,-wijk_code,-wijk_naam,-buurt_code_cipers,
-                             -buurt_naam,-soort_pand_code,-soort_pand_omschrijving) %>% 
-                        rename(adres_cur = adres), 
-                      adres_historie, by = "anr") %>%
-            mutate(adres = coalesce(adres, adres_cur)) %>%
-            select(-adres_cur)
-                      
-    # Institutioneel adres herbepalen
-    data <- add_institutioneel_adres(data, adressen_inst)
-  
-  data 
-}
-
 #' BRP tijdmachine
 #' @export
-brp_tijdmachine <- function(historie, brpstam, peil_datum){
+brp_tijdmachine <- function(historie, brpstam, peil_datum, adressen_inst){
   
   stopifnot(is.Date(peil_datum))
   
@@ -238,18 +161,10 @@ bepaal_huishoudens <- function(peil_datum,
                                verhuis_wezen = TRUE, 
                                ethniciteit = TRUE,
                                buurt_wijk_codes = TRUE,
-                               format = c("new","old"),
                                ...){
   
-  format <- match.arg(format)
-  
   # Filter op peildatum
-  if(format == "old"){
-    brp <- brp_tijdmachine_cipers(historie, brpstam, peil_datum)  
-  } else {
-    brp <- brp_tijdmachine(historie, brpstam, peil_datum)  
-  }
-  
+  brp <- brp_tijdmachine(historie, brpstam, peil_datum, adressen_inst)  
   
   # Start punt 'adres voor bepaling huishouden': adres_huishouden.
   # Dit kan later afwijken omdat 'wezen' verhuisd worden

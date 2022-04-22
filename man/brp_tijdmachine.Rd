@@ -4,7 +4,7 @@
 \alias{brp_tijdmachine}
 \title{BRP tijdmachine}
 \usage{
-brp_tijdmachine(historie, brpstam, peil_datum)
+brp_tijdmachine(historie, brpstam, peil_datum, adressen_inst)
 }
 \description{
 BRP tijdmachine
