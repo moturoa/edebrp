@@ -1,7 +1,7 @@
 Package: edebrp
 Type: Package
 Title: Ede BRP in a package
-Version: 0.9-3
+Version: 0.9-4
 Author: Remko Duursma
 Maintainer: Remko Duursma <remko@shintolabs.nl>
 Description: BRP extracten, Huishoudens bepalen, Huishoud categorieen, Ethniciteit, specifiek voor Ede.

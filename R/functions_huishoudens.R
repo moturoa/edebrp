@@ -250,7 +250,7 @@ bepaal_huishoudens <- function(peil_datum,
   # (doen we hier omdat deze functie ook in ssd_join_brp wordt gebruikt)
   brp <- drop_columns(brp,  
                 c("gemeente_inschrijving","gemeente_inschrijving_vws",
-                  "datum_inschrijving_vws","ingangsdatumverblijfstitelindicator", 
+                  "ingangsdatumverblijfstitelindicator", 
                   "datumeindeverblijfstitelindicator", "prs_document_datum_indicator", 
                   "gzv_document_datum_indicator", "ou1_document_datum_indicator", 
                   "ou2_document_datum_indicator", "datum_inschrijving_eerst"))

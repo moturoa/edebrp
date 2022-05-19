@@ -57,23 +57,25 @@ read_huwelijk <- function(con = NULL, brp_path = NULL, basename = "BZSHUWQ00_pin
              datum_huwelijk = replace_na(datum_huwelijk, lubridate::ymd("1001-1-1")))
   } else {
     
-    out <- tbl(con, in_schema("pseudo", "brp_bzshuw")) %>% 
-      select(bsn = prsburgerservicenummer,
-             anr = prsanummer,
-             bsn_partner = huwburgerservicenummer,
-             anr_partner = huwanummer,
-             datum_huwelijk = huwdatumsluitinghuwelijkpartnerschap,
-             datum_huwelijk_ind = huwdatumsluitinghuwelijkpartnerschapindicator,
-             datum_scheiding = huwdatumontbindinghuwelijkpartnerschap,
-             datum_scheiding_ind = huwdatumontbindinghuwelijkpartnerschapindicator,
-             datum_omzetting = huwdatumomzettinghuwelijkpartnerschap,
-             datum_omzetting_ind = huwdatumomzettinghuwelijkpartnerschapindicator) %>% 
-      collect %>%
-      remove_identical() %>%
-      mutate(datum_scheiding = lubridate::ymd(datum_scheiding),
-             datum_omzetting = lubridate::ymd(datum_omzetting),
-             datum_huwelijk = lubridate::ymd(datum_huwelijk),
-             datum_huwelijk = replace_na(datum_huwelijk, lubridate::ymd("1001-1-1")))
+    suppressWarnings({
+      out <- tbl(con, in_schema("pseudo", "brp_bzshuw")) %>% 
+        select(bsn = prsburgerservicenummer,
+               anr = prsanummer,
+               bsn_partner = huwburgerservicenummer,
+               anr_partner = huwanummer,
+               datum_huwelijk = huwdatumsluitinghuwelijkpartnerschap,
+               datum_huwelijk_ind = huwdatumsluitinghuwelijkpartnerschapindicator,
+               datum_scheiding = huwdatumontbindinghuwelijkpartnerschap,
+               datum_scheiding_ind = huwdatumontbindinghuwelijkpartnerschapindicator,
+               datum_omzetting = huwdatumomzettinghuwelijkpartnerschap,
+               datum_omzetting_ind = huwdatumomzettinghuwelijkpartnerschapindicator) %>% 
+        collect %>%
+        remove_identical() %>%
+        mutate(datum_scheiding = lubridate::ymd(datum_scheiding),
+               datum_omzetting = lubridate::ymd(datum_omzetting),
+               datum_huwelijk = lubridate::ymd(datum_huwelijk),
+               datum_huwelijk = replace_na(datum_huwelijk, lubridate::ymd("1001-1-1")))
+    })
     
     out[out == ""] <- NA
     
@@ -91,17 +93,20 @@ read_kind <- function(con = NULL, brp_path = NULL, basename = "BZSKINQ00_pink.cs
   
   tictoc::tic("bzskin")
   
-  if(!is.null(brp_path)){
-    out <- read_csv_source(brp_path, basename) %>%
-      janitor::clean_names() %>%
-      mutate(kndgeboortedatum = lubridate::ymd(kndgeboortedatum))  
-  } else {
-    out <- tbl(con, in_schema("pseudo", "brp_bzskin")) %>% 
-      collect %>%
-      mutate(kndgeboortedatum = lubridate::ymd(kndgeboortedatum))
-    
-    out[out == ""] <- NA
-  }
+  suppressWarnings({
+    if(!is.null(brp_path)){
+      out <- read_csv_source(brp_path, basename) %>%
+        janitor::clean_names() %>%
+        mutate(kndgeboortedatum = lubridate::ymd(kndgeboortedatum))  
+    } else {
+      out <- tbl(con, in_schema("pseudo", "brp_bzskin")) %>% 
+        collect %>%
+        mutate(kndgeboortedatum = lubridate::ymd(kndgeboortedatum))
+      
+      out[out == ""] <- NA
+    }  
+  })
+  
   
   tictoc::toc()
   
@@ -247,7 +252,6 @@ read_bzsprs <- function(con = NULL, brp_path = NULL, basename = "bzsprsq00_pink.
                           datum_geboorte = PRSGEBOORTEDATUM,
                           datum_overlijden = OVLDATUMOVERLIJDEN,
                           datum_inschrijving = VBLDATUMINSCHRIJVING,
-                          datum_inschrijving_vws = VWSDATUMINSCHRIJVING,
                           datum_adres = VBLDATUMAANVANGADRESHOUDING,
                           
                           gemeente_inschrijving = VBLGEMEENTEVANINSCHRIJVINGOMSCHRIJVING,
@@ -368,37 +372,23 @@ read_bzsprs <- function(con = NULL, brp_path = NULL, basename = "bzsprsq00_pink.
 
 #' Lees stambestand (BZSPRSQ00)
 #' @export
-read_brpstam <- function(brp_bzsprs, adressen_inst, peil_datum, date_format = c("new","old")){
+read_brpstam <- function(brp_bzsprs, adressen_inst, peil_datum){
   
   data(buurt_key)
   data(geboorte_land_code_key)
   
-  date_format <- match.arg(date_format)
-  
-  # 1. Leeftijden, datums.
-  if(date_format == "old"){
+  suppressWarnings({
     data <- brp_bzsprs %>%
-      mutate(
-        datum_adres = as.Date(datum_adres),
-        datum_geboorte = as.Date(datum_geboorte),
-        datum_overlijden = as.Date(datum_overlijden),
-        datum_inschrijving = as.Date(datum_inschrijving),
-        datum_inschrijving_vws = as.Date(datum_inschrijving_vws)
-      )
-  } else {
-    data <- brp_bzsprs %>%
-      mutate(
-        datum_adres = ymd(datum_adres),
-        datum_geboorte = ymd(datum_geboorte),
-        datum_overlijden = as.Date(ymd_hms(datum_overlijden)),
-        datum_inschrijving = ymd(datum_inschrijving),
-        datum_inschrijving_vws = ymd(datum_inschrijving_vws)
-      )
-    
-  }
+        mutate(
+          datum_adres = ymd(datum_adres),
+          datum_geboorte = ymd(datum_geboorte),
+          datum_overlijden = as.Date(ymd_hms(datum_overlijden)),
+          datum_inschrijving = ymd(datum_inschrijving)
+    )
+  })
   
   # extra kolommen
-  data$leeftijd <- as.numeric(difftime(peil_datum, data$datum_geboorte, units = "weeks")) / 52
+  data$leeftijd <- lubridate::time_length(difftime(peil_datum, data$datum_geboorte), unit = "years")
   data$minder18 <- data$leeftijd < 18
   data$minder23 <- data$leeftijd < 23
   
@@ -531,31 +521,21 @@ data
 
 #' Historie data, bijgewerkt
 #' @export
-read_historie <- function(brp_bzsc58, brpstam, date_format = c("new","old")){
-  
-  date_format <- match.arg(date_format)
+read_historie <- function(brp_bzsc58, brpstam){
   
   # Koppeltabel geboorte/overlijden
   levenstabel <- brpstam %>%
     select(anr, anrouder1, anrouder2, datum_geboorte, datum_overlijden) %>%
     distinct
-  
-  if(date_format == "old"){
-    out <- brp_bzsc58 %>%
-      mutate(
-        datum_inschrijving = as.Date(datum_inschrijving),
-        datum_adres = as.Date(datum_adres)
-        #datum_adres_buitenland = lubridate::ymd(datum_adres_buitenland)
-        #datum_adres = coalesce(datum_adres, datum_adres_buitenland)
-      )  
-  } else {
+
+  suppressWarnings({
     out <- brp_bzsc58 %>%
       mutate(
         datum_inschrijving = ymd(datum_inschrijving),
         datum_adres = ymd(datum_adres)
-      )
-  }
-   
+      )  
+  })
+  
   out %>%
     remove_identical() %>%
     left_join(levenstabel, by = "anr")
