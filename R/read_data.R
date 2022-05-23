@@ -372,17 +372,7 @@ read_bzsprs <- function(con = NULL, brp_path = NULL, basename = "bzsprsq00_pink.
 
 calculate_leeftijd <- function(datum_geboorte, peildatum){
   
-  stopifnot(length(peildatum) == 1)
-  
-  out <- vector("numeric", length = length(datum_geboorte))
-  
-  i_no <- which(is.na(datum_geboorte) | datum_geboorte > peildatum)
-  out[i_no] <- NA
-  i_yes <- setdiff(1:length(out), i_no)
-  out[i_yes] <- eeptools::age_calc(
-    datum_geboorte[i_yes], 
-    peildatum, units = "years")
-  out
+  trunc((datum_geboorte %--% peildatum) / years(1))
   
 }
 
